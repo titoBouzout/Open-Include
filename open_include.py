@@ -4,57 +4,65 @@ import re
 
 class OpenInclude(sublime_plugin.TextCommand):
 	def run(self, edit):
-		for region in self.view.sel():
+		window = sublime.active_window()
+		view = self.view
+		for region in view.sel():
 			opened = False
 
 			# between quotes
 			syntax = self.view.syntax_name(region.begin())
 			if re.match(".*string.quoted.double", syntax) or re.match(".*string.quoted.single", syntax):
-				opened = self.do_open(self.view.substr(self.view.extract_scope(region.begin())))
+				opened = self.do_open(window, view, view.substr(view.extract_scope(region.begin())))
 
 			# selected text
 			if not opened:
-				opened = self.do_open(self.view.substr(sublime.Region(region.begin(), region.end())))
+				opened = self.do_open(window, view, view.substr(sublime.Region(region.begin(), region.end())))
 
-			# current line
+			# current lines
 			if not opened:
-				opened = self.do_open(self.view.substr(sublime.Region(self.view.line(region.begin()).begin(), self.view.line(region.begin()).end())))
+				opened = self.do_open(window, view, view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end())))
 
-	def do_open(self, path):
-		# remove quotes
-		path = re.sub('^"|\'', '', re.sub('^"|\'', '', path.strip()))
-		path = re.sub('"|\'$', '', re.sub('^"|\'$', '', path.strip()))
+	def do_open(self, window, view, paths):
 
-		# remove :row:col
-		path = re.sub('(\:[0-9]*)+$', '', path.strip()).strip()
-		print path
+		paths = paths.split('\n')
+		opened = False
+		for path in paths:
+			# remove quotes
+			path = re.sub('^"|\'', '', re.sub('^"|\'', '', path.strip()))
+			path = re.sub('"|\'$', '', re.sub('^"|\'$', '', path.strip()))
 
-		if path == '':
-			return False
+			# remove :row:col
+			path = re.sub('(\:[0-9]*)+$', '', path.strip()).strip()
 
-		# relative to view
-		if self.view.file_name() != None and self.view.file_name() != '':
-			maybe_path = self.resolve_relative(os.path.dirname(self.view.file_name()), path)
-			if os.path.isfile(maybe_path):
-				self.view.window().open_file(maybe_path)
-				sublime.status_message("Opening file " + maybe_path)
-				return True
+			if path == '':
+				continue
 
-		# relative to project folders
-		for maybe_path in sublime.active_window().folders():
-			maybe_path = self.resolve_relative(maybe_path, path)
-			if os.path.isfile(maybe_path):
-				self.view.window().open_file(maybe_path)
-				sublime.status_message("Opening file " + maybe_path)
-				return True
+			# relative to view
+			if view.file_name() != None and view.file_name() != '':
+				maybe_path = self.resolve_relative(os.path.dirname(view.file_name()), path)
+				if os.path.isfile(maybe_path):
+					window.open_file(maybe_path)
+					sublime.status_message("Opening file " + maybe_path)
+					opened = True
+					continue
 
-		#absolute
-		if os.path.isfile(path):
-			self.view.window().open_file(path)
-			sublime.status_message("Opening file " + path)
-			return True
+			# relative to project folders
+			for maybe_path in sublime.active_window().folders():
+				maybe_path = self.resolve_relative(maybe_path, path)
+				if os.path.isfile(maybe_path):
+					window.open_file(maybe_path)
+					sublime.status_message("Opening file " + maybe_path)
+					opened = True
+					break
 
-		return False
+			#absolute
+			if os.path.isfile(path):
+				window.open_file(path)
+				sublime.status_message("Opening file " + path)
+				opened = True
+				continue
+
+		return opened
 
 	def resolve_relative(self, absolute, path):
 		subs = path.replace('\\', '/').split('/')
