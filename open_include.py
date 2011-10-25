@@ -28,8 +28,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 		opened = False
 		for path in paths:
 			# remove quotes
-			path = re.sub('^"|\'', '', re.sub('^"|\'', '', path.strip()))
-			path = re.sub('"|\'$', '', re.sub('^"|\'$', '', path.strip()))
+			path = re.sub('^"|\'', '',  re.sub('"|\'$', '', path.strip()))
 
 			# remove :row:col
 			path = re.sub('(\:[0-9]*)+$', '', path.strip()).strip()
