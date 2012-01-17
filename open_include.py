@@ -2,6 +2,8 @@ import sublime, sublime_plugin
 import os.path
 import re
 
+BINARY = re.compile('\.(apng|png|jpg|gif|jpeg|bmp|psd|ai|cdr|ico|cache|sublime-package|eot|svgz|ttf|woff|zip|tar|gz|rar|bz2|jar|xpi|mov|mpeg|avi|mpg|flv|wmv|mp3|wav|aif|aiff|snd|wma|asf|asx|pcm|pdf|doc|docx|xls|xlsx|ppt|pptx|rtf|sqlite|sqlitedb|fla|swf|exe)$', re.I);
+
 class OpenInclude(sublime_plugin.TextCommand):
 
 	# run and look for different sources of paths
@@ -24,10 +26,31 @@ class OpenInclude(sublime_plugin.TextCommand):
 			if not opened:
 				opened = self.resolve_path(window, view, view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end())))
 
+			# current scope
+			if not opened:
+				opened = self.resolve_path(window, view, view.substr(view.extract_scope(region.begin())))
+
+			# current line quotes and parenthesis
+			if not opened:
+				line = view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end()))
+				line = line.replace(')', '"').replace('(', '"').replace("'", '"')
+				lines = line.split('"')
+				for line in lines:
+					line = line.strip()
+					if line:
+						print line
+						opened = self.resolve_path(window, view, line)
+						if opened:
+							break;
+
+
 	# resolve the path of these sources and send to try_open
 	def resolve_path(self, window, view, paths):
 
 		paths = paths.split('\n')
+		paths.append(paths[0].replace('../', ''))
+		paths = list(set(paths))
+		
 		opened = False
 		for path in paths:
 			# remove quotes
@@ -72,7 +95,15 @@ class OpenInclude(sublime_plugin.TextCommand):
 	# try opening the resouce
 	def try_open(self, window, maybe_path):
 		if os.path.isfile(maybe_path):
-			window.open_file(maybe_path)
+			if BINARY.search(maybe_path):
+				import sys
+				path = os.path.join(sublime.packages_path(), 'Open-Include')
+				if path not in sys.path:
+					sys.path.append(path)
+				import desktop
+				desktop.open(maybe_path)
+			else:
+				window.open_file(maybe_path)
 			sublime.status_message("Opening file " + maybe_path)
 			return True
 		else:
