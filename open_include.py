@@ -38,7 +38,6 @@ class OpenInclude(sublime_plugin.TextCommand):
 				for line in lines:
 					line = line.strip()
 					if line:
-						print line
 						opened = self.resolve_path(window, view, line)
 						if opened:
 							break;
