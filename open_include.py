@@ -97,6 +97,13 @@ class OpenInclude(sublime_plugin.TextCommand):
 
 	# try opening the resouce
 	def try_open(self, window, maybe_path):
+		if maybe_path[:4] == 'http':
+			try:
+				import webbrowser
+				webbrowser.open_new_tab(maybe_path)
+				return True
+			except:
+				pass
 		if os.path.isfile(maybe_path):
 			if BINARY.search(maybe_path):
 				import sys
