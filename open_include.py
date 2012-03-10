@@ -42,6 +42,10 @@ class OpenInclude(sublime_plugin.TextCommand):
 						if opened:
 							break;
 
+			# current lines splitted by spaces or tabs
+			if not opened:
+				opened = self.resolve_path(window, view, view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end())).replace('\t', '\n').replace(' ', '\n'))
+
 
 	# resolve the path of these sources and send to try_open
 	def resolve_path(self, window, view, paths):
@@ -49,7 +53,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 		paths = paths.split('\n')
 		paths.append(paths[0].replace('../', ''))
 		paths = list(set(paths))
-		
+
 		opened = False
 		for path in paths:
 			# remove quotes
