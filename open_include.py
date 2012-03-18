@@ -1,6 +1,7 @@
 import sublime, sublime_plugin
 import os.path
 import re
+import thread
 
 BINARY = re.compile('\.(apng|png|jpg|gif|jpeg|bmp|psd|ai|cdr|ico|cache|sublime-package|eot|svgz|ttf|woff|zip|tar|gz|rar|bz2|jar|xpi|mov|mpeg|avi|mpg|flv|wmv|mp3|wav|aif|aiff|snd|wma|asf|asx|pcm|pdf|doc|docx|xls|xlsx|ppt|pptx|rtf|sqlite|sqlitedb|fla|swf|exe)$', re.I);
 
@@ -81,8 +82,19 @@ class OpenInclude(sublime_plugin.TextCommand):
 
 			# relative to project folders
 			for maybe_path in sublime.active_window().folders():
-				maybe_path = self.resolve_relative(maybe_path, path)
-				opened = self.try_open(window, maybe_path)
+
+				maybe_path_tpm = self.resolve_relative(maybe_path, path)
+				opened = self.try_open(window, maybe_path_tpm)
+				if opened:
+					break
+				# relative to project folders minus one folder.
+				maybe_path_tpm = self.resolve_relative(maybe_path, '../'+path)
+				opened = self.try_open(window, maybe_path_tpm)
+				if opened:
+					break
+				# relative to project folders minus two folder.
+				maybe_path_tpm = self.resolve_relative(maybe_path, '../../'+path)
+				opened = self.try_open(window, maybe_path_tpm)
 				if opened:
 					break
 			if opened:
@@ -98,12 +110,18 @@ class OpenInclude(sublime_plugin.TextCommand):
 	# try opening the resouce
 	def try_open(self, window, maybe_path):
 		if maybe_path[:4] == 'http':
-			try:
-				import webbrowser
-				webbrowser.open_new_tab(maybe_path)
+			if BINARY.search(maybe_path):
+				try:
+					sublime.status_message("Opening in browser " + maybe_path)
+					import webbrowser
+					webbrowser.open_new_tab(maybe_path)
+					return True
+				except:
+					pass
+			else:
+				sublime.status_message("Opening URL " + maybe_path)
+				thread.start_new_thread(self.read_url, (maybe_path, maybe_path))
 				return True
-			except:
-				pass
 		if os.path.isfile(maybe_path):
 			if BINARY.search(maybe_path):
 				import sys
@@ -126,3 +144,43 @@ class OpenInclude(sublime_plugin.TextCommand):
 			if sub != '':
 				absolute = os.path.join(absolute, sub)
 		return absolute
+
+	def read_url(self, url, so):
+		try:
+			if url[:5] == 'https':
+				url = re.sub('^https', 'http', url)
+			import urllib, urllib2
+			req = urllib2.urlopen(url)
+			content = req.read()
+			encoding=req.headers['content-type'].split('charset=')[-1]
+			try:
+				content = unicode(content, encoding)
+			except:
+				try:
+					content = content.encode('utf-8')
+				except:
+					content = ''
+			content_type = req.headers['content-type'].split(';')[0]
+			sublime.set_timeout(lambda:self.read_url_on_done(content, content_type), 0)
+		except:
+			pass
+
+	def read_url_on_done(self, content, content_type):
+		if content:
+			window = sublime.active_window()
+			view = window.new_file()
+			edit = view.begin_edit()
+			try:
+				view.insert(edit, 0, content)
+			finally:
+				view.end_edit(edit)
+			if content_type == 'text/html':
+				view.settings().set('syntax', 'Packages/HTML/HTML.tmLanguage')
+			elif content_type == 'text/css':
+				view.settings().set('syntax', 'Packages/CSS/CSS.tmLanguage')
+			elif content_type == 'text/javascript' or content_type == 'application/javascript' or content_type == 'application/x-javascript':
+				view.settings().set('syntax', 'Packages/JavaScript/JavaScript.tmLanguage')
+			elif content_type == 'application/json' or content_type == 'text/json':
+				view.settings().set('syntax', 'Packages/JavaScript/JSON.tmLanguage')
+			elif content_type == 'text/xml' or content_type == 'application/xml':
+				view.settings().set('syntax', 'Packages/XML/XML.tmLanguage')
