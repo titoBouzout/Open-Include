@@ -50,6 +50,13 @@ class OpenInclude(sublime_plugin.TextCommand):
 
 	# resolve the path of these sources and send to try_open
 	def resolve_path(self, window, view, paths):
+		import urllib
+		try:
+			paths_decoded = urllib.unquote(paths.encode('utf8'))
+			paths_decoded = unicode(paths_decoded.decode('utf8'));
+			paths += '\n'+paths_decoded
+		except:
+			pass
 
 		paths = paths.split('\n')
 		paths.append(paths[0].replace('../', ''))
