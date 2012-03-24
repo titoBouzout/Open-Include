@@ -11,6 +11,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 	def run(self, edit):
 		window = sublime.active_window()
 		view = self.view
+		something_opened = False
 		for region in view.sel():
 			opened = False
 
@@ -26,10 +27,6 @@ class OpenInclude(sublime_plugin.TextCommand):
 			# current lines
 			if not opened:
 				opened = self.resolve_path(window, view, view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end())))
-
-			# current scope
-			if not opened:
-				opened = self.resolve_path(window, view, view.substr(view.extract_scope(region.begin())))
 
 			# current line quotes and parenthesis
 			if not opened:
@@ -47,6 +44,11 @@ class OpenInclude(sublime_plugin.TextCommand):
 			if not opened:
 				opened = self.resolve_path(window, view, view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end())).replace('\t', '\n').replace(' ', '\n'))
 
+			if opened:
+				something_opened = True
+
+		if not something_opened:
+			self.resolve_path(window, view, view.substr(sublime.Region(0, view.size())).replace('\t', '\n'))
 
 	# resolve the path of these sources and send to try_open
 	def resolve_path(self, window, view, paths):
@@ -62,8 +64,10 @@ class OpenInclude(sublime_plugin.TextCommand):
 		paths.append(paths[0].replace('../', ''))
 		paths = list(set(paths))
 
-		opened = False
+		something_opened = False
+
 		for path in paths:
+			opened = False
 			# remove quotes
 			path = re.sub('^"|\'', '',  re.sub('"|\'$', '', path.strip()))
 
@@ -74,18 +78,18 @@ class OpenInclude(sublime_plugin.TextCommand):
 				continue
 
 			# relative to view
-			if view.file_name() != None and view.file_name() != '':
+			if not opened and view.file_name() != None and view.file_name() != '':
 				maybe_path = self.resolve_relative(os.path.dirname(view.file_name()), path)
 				opened = self.try_open(window, maybe_path)
 				if opened:
-					continue
+					something_opened = True
 
 			# relative to view dirname
-			if view.file_name() != None and view.file_name() != '':
+			if not opened and view.file_name() != None and view.file_name() != '':
 				maybe_path = self.resolve_relative(os.path.dirname(os.path.dirname(view.file_name())), path)
 				opened = self.try_open(window, maybe_path)
 				if opened:
-					continue
+					something_opened = True
 
 			# relative to project folders
 			for maybe_path in sublime.active_window().folders():
@@ -93,26 +97,28 @@ class OpenInclude(sublime_plugin.TextCommand):
 				maybe_path_tpm = self.resolve_relative(maybe_path, path)
 				opened = self.try_open(window, maybe_path_tpm)
 				if opened:
+					something_opened = True
 					break
 				# relative to project folders minus one folder.
 				maybe_path_tpm = self.resolve_relative(maybe_path, '../'+path)
 				opened = self.try_open(window, maybe_path_tpm)
 				if opened:
+					something_opened = True
 					break
 				# relative to project folders minus two folder.
 				maybe_path_tpm = self.resolve_relative(maybe_path, '../../'+path)
 				opened = self.try_open(window, maybe_path_tpm)
 				if opened:
+					something_opened = True
 					break
-			if opened:
-				continue
 
 			# absolute
-			opened = self.try_open(window, path)
-			if opened:
-					continue
+			if not opened:
+				opened = self.try_open(window, path)
+				if opened:
+					something_opened = True
 
-		return opened
+		return something_opened
 
 	# try opening the resouce
 	def try_open(self, window, maybe_path):
@@ -124,7 +130,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 					webbrowser.open_new_tab(maybe_path)
 					return True
 				except:
-					pass
+					return False
 			else:
 				sublime.status_message("Opening URL " + maybe_path)
 				thread.start_new_thread(self.read_url, (maybe_path, maybe_path))
@@ -156,7 +162,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 		try:
 			if url[:5] == 'https':
 				url = re.sub('^https', 'http', url)
-			import urllib, urllib2
+			import urllib2
 			req = urllib2.urlopen(url)
 			content = req.read()
 			encoding=req.headers['content-type'].split('charset=')[-1]
