@@ -2,10 +2,10 @@ Description
 ------------------
 
 This plugin will try to open Sublime Text file paths found on selections/cursor when pressing "ALT+D".
-It has support for .coffee/.js/.hbs/.jade files when no extension specified. Usefull when doing require style modules.
+It has support for .coffee/.js/.hbs/.jade files when no extension specified. Usefull when doing require style javascript modules.
 
-Binary included files such images, videos, etc will open with default application.
-HTTP starting strings will always open with default browser.
+Files like images, videos, etc will open with the default application.
+Urls will always open with the default browser.
 
 Sources:
 ------------------
