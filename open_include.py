@@ -66,20 +66,23 @@ class OpenInclude(sublime_plugin.TextCommand):
 		paths = list(set(paths))
 
 		something_opened = False
+		opened = False
 
 		for path in paths:
-			extensions = ["", ".coffee", ".hbs", ".jade", ".js"];
+			path = path
+			if path.strip() == '':
+				continue
+			print "path: " + path
+			print path.find('http://')
 
+			extensions = ["", ".coffee", ".hbs", ".jade", ".js"];
 			for extension in extensions:
-				opened = False
 				# remove quotes
 				path = re.sub('^"|\'', '',  re.sub('"|\'$', '', path.strip()))
 
 				# remove :row:col
 				path = re.sub('(\:[0-9]*)+$', '', path.strip()).strip()
 
-				if path == '':
-					continue
 
 				newpath = path + extension
 				print "newpath: " + newpath
@@ -113,24 +116,25 @@ class OpenInclude(sublime_plugin.TextCommand):
 						something_opened = True
 
 				# relative to project folders
-				for maybe_path in sublime.active_window().folders():
-					maybe_path_tpm = self.resolve_relative(maybe_path, newpath)
-					opened = self.try_open(window, maybe_path_tpm)
-					if opened:
-						something_opened = True
-						break
-					# relative to project folders minus one folder.
-					maybe_path_tpm = self.resolve_relative(maybe_path, '../'+ newpath)
-					opened = self.try_open(window, maybe_path_tpm)
-					if opened:
-						something_opened = True
-						break
-					# relative to project folders minus two folder.
-					maybe_path_tpm = self.resolve_relative(maybe_path, '../../'+ newpath)
-					opened = self.try_open(window, maybe_path_tpm)
-					if opened:
-						something_opened = True
-						break
+				if not opened:
+					for maybe_path in sublime.active_window().folders():
+						maybe_path_tpm = self.resolve_relative(maybe_path, newpath)
+						opened = self.try_open(window, maybe_path_tpm)
+						if opened:
+							something_opened = True
+							break
+						# relative to project folders minus one folder.
+						maybe_path_tpm = self.resolve_relative(maybe_path, '../'+ newpath)
+						opened = self.try_open(window, maybe_path_tpm)
+						if opened:
+							something_opened = True
+							break
+						# relative to project folders minus two folder.
+						maybe_path_tpm = self.resolve_relative(maybe_path, '../../'+ newpath)
+						opened = self.try_open(window, maybe_path_tpm)
+						if opened:
+							something_opened = True
+							break
 
 				# absolute
 				if not opened:
@@ -156,6 +160,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 				# thread.start_new_thread(self.read_url, (maybe_path, maybe_path))
 				# return True
 				sublime.status_message("Opening in browser " + maybe_path)
+				print("Opening in browser " + maybe_path)
 				import webbrowser
 				webbrowser.open_new_tab(maybe_path)
 				return True
