@@ -152,13 +152,13 @@ class OpenInclude(sublime_plugin.TextCommand):
 				except:
 					return False
 			else:
-				# sublime.status_message("Opening URL " + maybe_path)
-				# thread.start_new_thread(self.read_url, (maybe_path, maybe_path))
-				# return True
-				sublime.status_message("Opening in browser " + maybe_path)
-				import webbrowser
-				webbrowser.open_new_tab(maybe_path)
+				sublime.status_message("Opening URL " + maybe_path)
+				thread.start_new_thread(self.read_url, (maybe_path, maybe_path))
 				return True
+				# sublime.status_message("Opening in browser " + maybe_path)
+				# import webbrowser
+				# webbrowser.open_new_tab(maybe_path)
+				# return True
 		if os.path.isfile(maybe_path):
 			if BINARY.search(maybe_path):
 				import sys
