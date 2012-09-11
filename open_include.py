@@ -18,7 +18,6 @@ class OpenInclude(sublime_plugin.TextCommand):
 			# between quotes
 			syntax = self.view.syntax_name(region.begin())
 			if re.match(".*string.quoted.double", syntax) or re.match(".*string.quoted.single", syntax):
-				# opened = self.resolve_path(window, view, view.substr(view.extract_scope(region.begin())))
 				opened = self.resolve_path(window, view, view.substr(view.extract_scope(region.begin())))
 
 			# selected text
@@ -72,8 +71,6 @@ class OpenInclude(sublime_plugin.TextCommand):
 			path = path
 			if path.strip() == '':
 				continue
-			print "path: " + path
-			print path.find('http://')
 
 			extensions = ["", ".coffee", ".hbs", ".jade", ".js"];
 			for extension in extensions:
@@ -85,7 +82,6 @@ class OpenInclude(sublime_plugin.TextCommand):
 
 
 				newpath = path + extension
-				print "newpath: " + newpath
 
 				# relative to view
 				if not opened and view.file_name() != None and view.file_name() != '':
@@ -160,7 +156,6 @@ class OpenInclude(sublime_plugin.TextCommand):
 				# thread.start_new_thread(self.read_url, (maybe_path, maybe_path))
 				# return True
 				sublime.status_message("Opening in browser " + maybe_path)
-				print("Opening in browser " + maybe_path)
 				import webbrowser
 				webbrowser.open_new_tab(maybe_path)
 				return True
