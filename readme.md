@@ -4,7 +4,7 @@ Description
 This plugin will try to open Sublime Text file paths found on selections/cursor when pressing "ALT+D".
 It has support for .coffee/.js/.hbs/.jade files when no extension specified. Usefull when doing require style javascript modules.
 
-strings starting with HTTP will open with default browser (if binary), if not, we will read the file with urllib and open the result in a new view.
+Strings starting with HTTP will open with default browser (if binary), if not, we will read the file with urllib and open the result in a new view. By setting the `"open_http_include_in_browser"` setting in your user preferences to `true`, we will always open the default browser.
 
 Sources:
 ------------------
