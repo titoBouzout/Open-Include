@@ -5,6 +5,9 @@ import thread
 
 BINARY = re.compile('\.(apng|png|jpg|gif|jpeg|bmp|psd|ai|cdr|ico|cache|sublime-package|eot|svgz|ttf|woff|zip|tar|gz|rar|bz2|jar|xpi|mov|mpeg|avi|mpg|flv|wmv|mp3|wav|aif|aiff|snd|wma|asf|asx|pcm|pdf|doc|docx|xls|xlsx|ppt|pptx|rtf|sqlite|sqlitedb|fla|swf|exe)$', re.I);
 
+s = sublime.load_settings('Open-Include.sublime-settings')
+
+
 class OpenInclude(sublime_plugin.TextCommand):
 
 	# run and look for different sources of paths
@@ -143,7 +146,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 	# try opening the resouce
 	def try_open(self, window, maybe_path):
 		if maybe_path[:4] == 'http':
-			if BINARY.search(maybe_path) or self.view.settings().get("open_http_include_in_browser", False):
+			if BINARY.search(maybe_path) or s.get("open_http_in_browser", False):
 				try:
 					sublime.status_message("Opening in browser " + maybe_path)
 					import webbrowser
