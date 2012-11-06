@@ -49,7 +49,6 @@ class OpenInclude(sublime_plugin.TextCommand):
 
 			if opened:
 				something_opened = True
-
 		if not something_opened:
 			self.resolve_path(window, view, view.substr(sublime.Region(0, view.size())).replace('\t', '\n'))
 
@@ -65,6 +64,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 
 		paths = paths.split('\n')
 		paths.append(paths[0].replace('../', ''))
+		paths.append(paths[0].replace('/', '/_'))
 		paths = list(set(paths))
 
 		something_opened = False
@@ -75,7 +75,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 			if path.strip() == '':
 				continue
 
-			extensions = ["", ".coffee", ".hbs", ".jade", ".js"];
+			extensions = ["", ".coffee", ".hbs", ".jade", ".js", ".scss"];
 			for extension in extensions:
 				# remove quotes
 				path = re.sub('^"|\'', '',  re.sub('"|\'$', '', path.strip()))
