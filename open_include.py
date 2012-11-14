@@ -63,6 +63,10 @@ class OpenInclude(sublime_plugin.TextCommand):
 			pass
 
 		paths = paths.split('\n')
+
+		if s.get('use_strict'):
+			return self.try_open(window, self.resolve_relative(os.path.dirname(view.file_name()), paths[0]))
+
 		paths.append(paths[0].replace('../', ''))
 		paths.append(paths[0].replace('/', '/_'))
 		paths = list(set(paths))

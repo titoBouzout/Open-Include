@@ -1,4 +1,7 @@
 {
     // Setting this to `true` will open every http link in your default browser
-    "open_http_in_browser": false
+    "open_http_in_browser": false,
+
+    //strict means; the path needs to be complete and correct, if not the file will not open and the package will not attempt to find the file.
+    "use_strict": false
 }

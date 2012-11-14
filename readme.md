@@ -6,6 +6,8 @@ It has support for .coffee/.js/.hbs/.jade files when no extension specified. Use
 
 Strings starting with HTTP will open with default browser (if binary), if not, we will read the file with urllib and open the result in a new view. By setting the `"open_http_in_browser"` setting in your user preferences to `true`, we will always open the default browser.
 
+`use_strict` preference will control if the path should be complete and correct, if not the file will not open and the package will not attempt to find the file.
+
 Sources:
 ------------------
 
