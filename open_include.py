@@ -1,7 +1,7 @@
 import sublime, sublime_plugin
 import os.path
 import re
-import thread
+import threading
 
 BINARY = re.compile('\.(apng|png|jpg|gif|jpeg|bmp|psd|ai|cdr|ico|cache|sublime-package|eot|svgz|ttf|woff|zip|tar|gz|rar|bz2|jar|xpi|mov|mpeg|avi|mpg|flv|wmv|mp3|wav|aif|aiff|snd|wma|asf|asx|pcm|pdf|doc|docx|xls|xlsx|ppt|pptx|rtf|sqlite|sqlitedb|fla|swf|exe)$', re.I);
 
@@ -19,7 +19,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 			opened = False
 
 			# between quotes
-			syntax = self.view.syntax_name(region.begin())
+			syntax = self.view.scope_name(region.begin())
 			if re.match(".*string.quoted.double", syntax) or re.match(".*string.quoted.single", syntax):
 				opened = self.resolve_path(window, view, view.substr(view.extract_scope(region.begin())))
 
