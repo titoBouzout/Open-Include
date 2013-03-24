@@ -3,5 +3,8 @@
     "open_http_in_browser": false,
 
     //strict means; the path needs to be complete and correct, if not the file will not open and the package will not attempt to find the file.
-    "use_strict": false
+    "use_strict": false,
+
+    //will create the file if not exists
+    "create_if_not_exists" : false
 }

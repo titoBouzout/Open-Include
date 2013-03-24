@@ -23,6 +23,16 @@ class OpenInclude(sublime_plugin.TextCommand):
 			if re.match(".*string.quoted.double", syntax) or re.match(".*string.quoted.single", syntax):
 				opened = self.resolve_path(window, view, view.substr(view.extract_scope(region.begin())))
 
+				if s.get('create_if_not_exists'):
+					path = self.resolve_relative(os.path.dirname(view.file_name()), view.substr(view.extract_scope(region.begin())).replace("'", '').replace('"', '') )
+					branch, leaf = os.path.split(path)
+					try:
+						os.makedirs(branch)
+					except:
+						pass
+					window.open_file(path)
+					return True;
+
 			# selected text
 			if not opened:
 				opened = self.resolve_path(window, view, view.substr(sublime.Region(region.begin(), region.end())))
@@ -86,7 +96,6 @@ class OpenInclude(sublime_plugin.TextCommand):
 
 				# remove :row:col
 				path = re.sub('(\:[0-9]*)+$', '', path.strip()).strip()
-
 
 				newpath = path + extension
 
