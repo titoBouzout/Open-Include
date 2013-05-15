@@ -158,15 +158,12 @@ class OpenInclude(sublime_plugin.TextCommand):
 
 	# try opening the resouce
 	def try_open(self, window, maybe_path):
-		if maybe_path[:4] == 'http':
+		if maybe_path[:7] == 'http://' or  maybe_path[:8] == 'https://':
 			if BINARY.search(maybe_path) or s.get("open_http_in_browser", False):
-				try:
-					sublime.status_message("Opening in browser " + maybe_path)
-					import webbrowser
-					webbrowser.open_new_tab(maybe_path)
-					return True
-				except:
-					return False
+				sublime.status_message("Opening in browser " + maybe_path)
+				import webbrowser
+				webbrowser.open_new_tab(maybe_path)
+				return True
 			else:
 				sublime.status_message("Opening URL " + maybe_path)
 				thread.start_new_thread(self.read_url, (maybe_path, maybe_path))
