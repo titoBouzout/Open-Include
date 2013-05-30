@@ -24,7 +24,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 			if re.match(".*string.quoted.double", syntax) or re.match(".*string.quoted.single", syntax):
 				opened = self.resolve_path(window, view, view.substr(view.extract_scope(region.begin())))
 
-				if s.get('create_if_not_exists'):
+				if ( opened != True and s.get('create_if_not_exists') ):
 					path = self.resolve_relative(os.path.dirname(view.file_name()), view.substr(view.extract_scope(region.begin())).replace("'", '').replace('"', '') )
 					branch, leaf = os.path.split(path)
 					try:
