@@ -2,6 +2,7 @@ import sublime, sublime_plugin
 import os.path
 import re
 import threading
+from .Edit import Edit as Edit
 
 BINARY = re.compile('\.(apng|png|jpg|gif|jpeg|bmp|psd|ai|cdr|ico|cache|sublime-package|eot|svgz|ttf|woff|zip|tar|gz|rar|bz2|jar|xpi|mov|mpeg|avi|mpg|flv|wmv|mp3|wav|aif|aiff|snd|wma|asf|asx|pcm|pdf|doc|docx|xls|xlsx|ppt|pptx|rtf|sqlite|sqlitedb|fla|swf|exe)$', re.I);
 def plugin_loaded():
@@ -166,7 +167,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 				return True
 			else:
 				sublime.status_message("Opening URL " + maybe_path)
-				thread.start_new_thread(self.read_url, (maybe_path, maybe_path))
+				threading.Thread(target=self.read_url, args=(maybe_path, maybe_path)).start()
 				return True
 
 		if os.path.isfile(maybe_path):
@@ -196,17 +197,18 @@ class OpenInclude(sublime_plugin.TextCommand):
 		try:
 			if url[:5] == 'https':
 				url = re.sub('^https', 'http', url)
-			import urllib2
-			req = urllib2.urlopen(url)
+			import urllib.request
+			req = urllib.request.urlopen(url)
 			content = req.read()
 			encoding=req.headers['content-type'].split('charset=')[-1]
 			try:
-				content = unicode(content, encoding)
+				content = str(content, encoding)
 			except:
 				try:
-					content = content.encode('utf-8')
+					content = str(content, 'utf-8');
 				except:
-					content = ''
+					content = str(content, 'utf8', errors="replace");
+
 			content_type = req.headers['content-type'].split(';')[0]
 			sublime.set_timeout(lambda:self.read_url_on_done(content, content_type), 0)
 		except:
@@ -216,18 +218,18 @@ class OpenInclude(sublime_plugin.TextCommand):
 		if content:
 			window = sublime.active_window()
 			view = window.new_file()
-			edit = view.begin_edit()
-			try:
-				view.insert(edit, 0, content)
-			finally:
-				view.end_edit(edit)
-			if content_type == 'text/html':
-				view.settings().set('syntax', 'Packages/HTML/HTML.tmLanguage')
-			elif content_type == 'text/css':
-				view.settings().set('syntax', 'Packages/CSS/CSS.tmLanguage')
-			elif content_type == 'text/javascript' or content_type == 'application/javascript' or content_type == 'application/x-javascript':
-				view.settings().set('syntax', 'Packages/JavaScript/JavaScript.tmLanguage')
-			elif content_type == 'application/json' or content_type == 'text/json':
-				view.settings().set('syntax', 'Packages/JavaScript/JSON.tmLanguage')
-			elif content_type == 'text/xml' or content_type == 'application/xml':
-				view.settings().set('syntax', 'Packages/XML/XML.tmLanguage')
+			with Edit(view) as edit:
+				try:
+					edit.insert(0, content)
+				except:
+					pass
+				if content_type == 'text/html':
+					view.settings().set('syntax', 'Packages/HTML/HTML.tmLanguage')
+				elif content_type == 'text/css':
+					view.settings().set('syntax', 'Packages/CSS/CSS.tmLanguage')
+				elif content_type == 'text/javascript' or content_type == 'application/javascript' or content_type == 'application/x-javascript':
+					view.settings().set('syntax', 'Packages/JavaScript/JavaScript.tmLanguage')
+				elif content_type == 'application/json' or content_type == 'text/json':
+					view.settings().set('syntax', 'Packages/JavaScript/JSON.tmLanguage')
+				elif content_type == 'text/xml' or content_type == 'application/xml':
+					view.settings().set('syntax', 'Packages/XML/XML.tmLanguage')
