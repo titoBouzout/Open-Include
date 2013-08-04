@@ -86,67 +86,43 @@ class OpenInclude(sublime_plugin.TextCommand):
 		opened = False
 
 		for path in paths:
-			path = path
-			if path.strip() == '':
+			path = path.strip()
+			if path == '':
 				continue
 
 			extensions = ["", ".coffee", ".hbs", ".jade", ".js", ".scss", ".sass", ".styl", ".less"];
 			for extension in extensions:
 				# remove quotes
-				path = re.sub('^"|\'', '',  re.sub('"|\'$', '', path.strip()))
+				path = re.sub('^"|\'', '',  re.sub('"|\'$', '', path))
 
 				# remove :row:col
-				path = re.sub('(\:[0-9]*)+$', '', path.strip()).strip()
+				path = re.sub('(\:[0-9]*)+$', '', path).strip()
 
 				newpath = path + extension
 
-				# relative to view
-				if not opened and view.file_name() != None and view.file_name() != '':
-					maybe_path = self.resolve_relative(os.path.dirname(view.file_name()), newpath)
-					opened = self.try_open(window, maybe_path)
-					if opened:
-						something_opened = True
+				relative_paths = {
+					"toView" : view.file_name(),
+					"toViewDirname":  os.path.dirname(view.file_name())
+				}
 
-				# relative to view dirname
-				if not opened and view.file_name() != None and view.file_name() != '':
-					maybe_path = self.resolve_relative(os.path.dirname(os.path.dirname(view.file_name())), newpath)
-					opened = self.try_open(window, maybe_path)
-					if opened:
-						something_opened = True
+				folder_structure = ["", "../", "../../", "../../../"];
 
-				# relative to view dirname minus one folder
-				if not opened and view.file_name() != None and view.file_name() != '':
-					maybe_path = self.resolve_relative(os.path.dirname(os.path.dirname(view.file_name())), "../" + newpath)
-					opened = self.try_open(window, maybe_path)
-					if opened:
-						something_opened = True
-
-				# relative to view dirname minus two folders
-				if not opened and view.file_name() != None and view.file_name() != '':
-					maybe_path = self.resolve_relative(os.path.dirname(os.path.dirname(view.file_name())), "../../" + newpath)
-					opened = self.try_open(window, maybe_path)
-					if opened:
-						something_opened = True
+				# relative to view & view dir name
+				something_opened = False
+				for new_path_prefix in folder_structure:
+					something_opened = self.create_path_relative_to_view(  window, view, relative_paths['toView'], new_path_prefix+newpath  )
+					if not something_opened:
+						something_opened = self.create_path_relative_to_view(  window, view, relative_paths['toViewDirname'], new_path_prefix+newpath  )
 
 				# relative to project folders
 				if not opened:
 					for maybe_path in sublime.active_window().folders():
-						maybe_path_tpm = self.resolve_relative(maybe_path, newpath)
-						opened = self.try_open(window, maybe_path_tpm)
-						if opened:
-							something_opened = True
-							break
-						# relative to project folders minus one folder.
-						maybe_path_tpm = self.resolve_relative(maybe_path, '../'+ newpath)
-						opened = self.try_open(window, maybe_path_tpm)
-						if opened:
-							something_opened = True
-							break
-						# relative to project folders minus two folder.
-						maybe_path_tpm = self.resolve_relative(maybe_path, '../../'+ newpath)
-						opened = self.try_open(window, maybe_path_tpm)
-						if opened:
-							something_opened = True
+						something_opened = False
+						for new_path_prefix in folder_structure:
+							if self.create_path_relative_to_project( window, maybe_path, new_path_prefix + newpath ):
+								something_opened = True
+								break
+						if something_opened:
 							break
 
 				# absolute
@@ -155,6 +131,25 @@ class OpenInclude(sublime_plugin.TextCommand):
 					if opened:
 						something_opened = True
 
+		return something_opened
+
+	def create_path_relative_to_project( self, window, maybe_path, newpath ):
+		something_opened = False
+
+		maybe_path_tpm = self.resolve_relative(maybe_path, newpath )
+		opened = self.try_open(window, maybe_path_tpm)
+		if opened:
+			something_opened = True
+		
+		return something_opened
+
+	def create_path_relative_to_view( self, window, view, relative_path, newpath ):
+		opened = something_opened = False
+		if not opened and view.file_name() != None and view.file_name() != '':
+			maybe_path = self.resolve_relative(os.path.dirname( relative_path ), newpath)
+			opened = self.try_open(window, maybe_path)
+			if opened:
+				something_opened = True
 		return something_opened
 
 	# try opening the resouce
