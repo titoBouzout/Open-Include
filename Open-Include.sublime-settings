@@ -14,7 +14,7 @@
         "prefix"   : "_"
       },
       {
-        "extension": ".scss",
+        "extension": ".sass",
         "prefix"   : "_"
       }
     ]
