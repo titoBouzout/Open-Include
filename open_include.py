@@ -9,6 +9,7 @@ def plugin_loaded():
 	global s
 	s = sublime.load_settings('Open-Include.sublime-settings')
 
+
 class OpenInclude(sublime_plugin.TextCommand):
 
 	# run and look for different sources of paths
@@ -21,10 +22,21 @@ class OpenInclude(sublime_plugin.TextCommand):
 
 			# between quotes
 			syntax = self.view.scope_name(region.begin())
-			if re.match(".*string.quoted.double", syntax) or re.match(".*string.quoted.single", syntax):
-				opened = self.resolve_path(window, view, view.substr(view.extract_scope(region.begin())))
+			if re.match(".*(parameter.url|string.quoted.(double|single))", syntax):
+				file_to_open = view.substr(view.extract_scope(region.begin()));
+				opened = self.resolve_path(window, view, file_to_open)
 
-				if ( opened != True and s.get('create_if_not_exists') ):
+				if not opened:
+					for extension in s.get('auto_extension'):
+						file_to_open = file_to_open.split( '/' )
+						file_to_open[-1] = extension.get('prefix') + file_to_open[-1] + extension.get('extension')
+						file_to_open = '/'.join(file_to_open)
+
+						opened = self.resolve_path(window, view, file_to_open)
+						if opened:
+							break
+
+				if ( not opened and s.get('create_if_not_exists') ):
 					path = self.resolve_relative(os.path.dirname(view.file_name()), view.substr(view.extract_scope(region.begin())).replace("'", '').replace('"', '') )
 					branch, leaf = os.path.split(path)
 					try:
@@ -78,9 +90,9 @@ class OpenInclude(sublime_plugin.TextCommand):
 		if s.get('use_strict'):
 			return self.try_open(window, self.resolve_relative(os.path.dirname(view.file_name()), paths[0]))
 
-		paths.append(paths[0].replace('../', ''))
-		paths.append(paths[0].replace('/', '/_'))
-		paths = list(set(paths))
+		# paths.append(paths[0].replace('../', ''))
+		# paths.append(paths[0].replace('/', '/_'))
+		# paths = list(set(paths))
 
 		something_opened = False
 		opened = False
@@ -90,66 +102,66 @@ class OpenInclude(sublime_plugin.TextCommand):
 			if path == '':
 				continue
 
-			extensions = ["", ".coffee", ".hbs", ".jade", ".js", ".scss", ".sass", ".styl", ".less"];
-			for extension in extensions:
-				# remove quotes
-				path = re.sub('^"|\'', '',  re.sub('"|\'$', '', path))
+			# extensions = ["", ".coffee", ".hbs", ".jade", ".js", ".scss", ".sass", ".styl", ".less"];
+			# for extension in extensions:
+			# remove quotes
+			path = re.sub('^"|\'', '',  re.sub('"|\'$', '', path))
 
-				# remove :row:col
-				path = re.sub('(\:[0-9]*)+$', '', path).strip()
+			# remove :row:col
+			path = re.sub('(\:[0-9]*)+$', '', path).strip()
 
-				newpath = path + extension
+			relative_paths = {
+				"toView" : view.file_name(),
+				"toViewDirname":  os.path.dirname(view.file_name())
+			}
 
-				relative_paths = {
-					"toView" : view.file_name(),
-					"toViewDirname":  os.path.dirname(view.file_name())
-				}
+			folder_structure = []
+			for i in range(s.get('maximum_folder_up')):
+				folder_structure.append( "../" * i)
 
-				folder_structure = ["", "../", "../../", "../../../"];
+			# relative to view & view dir name
+			something_opened = False
+			for new_path_prefix in folder_structure:
+				something_opened = self.create_path_relative_to_view( window, view, relative_paths['toView'], new_path_prefix+path )
+				if not something_opened:
+					something_opened = self.create_path_relative_to_view( window, view, relative_paths['toViewDirname'], new_path_prefix+path )
+				else:
+					break
 
-				# relative to view & view dir name
-				something_opened = False
-				for new_path_prefix in folder_structure:
-					something_opened = self.create_path_relative_to_view(  window, view, relative_paths['toView'], new_path_prefix+newpath  )
-					if not something_opened:
-						something_opened = self.create_path_relative_to_view(  window, view, relative_paths['toViewDirname'], new_path_prefix+newpath  )
-
-				# relative to project folders
-				if not opened:
-					for maybe_path in sublime.active_window().folders():
-						something_opened = False
-						for new_path_prefix in folder_structure:
-							if self.create_path_relative_to_project( window, maybe_path, new_path_prefix + newpath ):
-								something_opened = True
-								break
-						if something_opened:
+			# relative to project folders
+			if not something_opened:
+				for maybe_path in sublime.active_window().folders():
+					something_opened = False
+					for new_path_prefix in folder_structure:
+						if self.create_path_relative_to_project( window, maybe_path, new_path_prefix + path ):
+							something_opened = True
 							break
+					if something_opened:
+						break
 
-				# absolute
-				if not opened:
-					opened = self.try_open(window, newpath)
-					if opened:
-						something_opened = True
+			# absolute
+			if not something_opened:
+				something_opened = self.try_open(window, path)
+				if something_opened:
+					something_opened = True
 
 		return something_opened
 
-	def create_path_relative_to_project( self, window, maybe_path, newpath ):
+	def create_path_relative_to_project( self, window, maybe_path, path ):
 		something_opened = False
 
-		maybe_path_tpm = self.resolve_relative(maybe_path, newpath )
+		maybe_path_tpm = self.resolve_relative(maybe_path, path )
 		opened = self.try_open(window, maybe_path_tpm)
 		if opened:
 			something_opened = True
 		
 		return something_opened
 
-	def create_path_relative_to_view( self, window, view, relative_path, newpath ):
-		opened = something_opened = False
-		if not opened and view.file_name() != None and view.file_name() != '':
-			maybe_path = self.resolve_relative(os.path.dirname( relative_path ), newpath)
-			opened = self.try_open(window, maybe_path)
-			if opened:
-				something_opened = True
+	def create_path_relative_to_view( self, window, view, relative_path, path ):
+		something_opened = False
+		if not something_opened and view.file_name() != None and view.file_name() != '':
+			maybe_path = self.resolve_relative(os.path.dirname( relative_path ), path)
+			something_opened = self.try_open(window, maybe_path)
 		return something_opened
 
 	# try opening the resouce
