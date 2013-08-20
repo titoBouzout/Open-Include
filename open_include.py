@@ -36,7 +36,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 						if opened:
 							break
 
-				if ( not opened and s.get('create_if_not_exists') ):
+				if not opened and s.get('create_if_not_exists') and view.file_name() != None and view.file_name() != '':
 					path = self.resolve_relative(os.path.dirname(view.file_name()), view.substr(view.extract_scope(region.begin())).replace("'", '').replace('"', '') )
 					branch, leaf = os.path.split(path)
 					try:
@@ -111,8 +111,8 @@ class OpenInclude(sublime_plugin.TextCommand):
 			path = re.sub('(\:[0-9]*)+$', '', path).strip()
 
 			relative_paths = {
-				"toView" : view.file_name(),
-				"toViewDirname":  os.path.dirname(view.file_name())
+				"toView" : view.file_name() if view.file_name() != None and view.file_name() != '' else '',
+				"toViewDirname":  os.path.dirname(view.file_name()) if view.file_name() != None and view.file_name() != '' else ''
 			}
 
 			folder_structure = []
@@ -154,7 +154,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 		opened = self.try_open(window, maybe_path_tpm)
 		if opened:
 			something_opened = True
-		
+
 		return something_opened
 
 	def create_path_relative_to_view( self, window, view, relative_path, path ):
