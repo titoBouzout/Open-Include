@@ -8,6 +8,8 @@ Strings starting with HTTP will open with default browser (if binary), if not, w
 
 `use_strict` preference will control if the path should be complete and correct, if not the file will not open and the package will not attempt to find the file.
 
+`use_extensions` preference will control the extensions, wich will be used when no extension is specified.
+
 Sources:
 ------------------
 
