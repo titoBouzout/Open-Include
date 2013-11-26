@@ -31,9 +31,9 @@ Will try to resolve to:
 
 Contributors:
 ---
-@titoBouzout
-@vip32
-@FichteFoll
-@kizu
-@i-akhmadullin
-@hoest
+- [titoBouzout](https://github.com/titoBouzout)
+- [vip32](https://github.com/vip32)
+- [FichteFoll](https://github.com/FichteFoll)
+- [kizu](https://github.com/kizu)
+- [i-akhmadullin](https://github.com/i-akhmadullin)
+- [hoest](https://github.com/hoest)
