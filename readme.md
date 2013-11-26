@@ -28,3 +28,12 @@ Will try to resolve to:
 - Relative to project folders minus 1 folder
 - Relative to project folders minus 2 folders
 - Absolute path
+
+Contributors:
+---
+@titoBouzout
+@vip32
+@FichteFoll
+@kizu
+@i-akhmadullin
+@hoest
