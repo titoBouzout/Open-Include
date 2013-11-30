@@ -8,6 +8,8 @@ Strings starting with HTTP will open with default browser (if binary), if not, w
 
 `use_strict` preference will control if the path should be complete and correct, if not the file will not open and the package will not attempt to find the file.
 
+`use_extensions` preference will control the extensions, wich will be used when no extension is specified.
+
 Sources:
 ------------------
 
@@ -28,3 +30,12 @@ Will try to resolve to:
 - Relative to project folders minus 1 folder
 - Relative to project folders minus 2 folders
 - Absolute path
+
+Contributors:
+---
+- [titoBouzout](https://github.com/titoBouzout)
+- [vip32](https://github.com/vip32)
+- [FichteFoll](https://github.com/FichteFoll)
+- [kizu](https://github.com/kizu)
+- [i-akhmadullin](https://github.com/i-akhmadullin)
+- [hoest](https://github.com/hoest)
