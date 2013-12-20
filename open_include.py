@@ -8,14 +8,10 @@ from .Edit import Edit as Edit
 BINARY = re.compile('\.(apng|png|jpg|gif|jpeg|bmp|psd|ai|cdr|ico|cache|sublime-package|eot|svgz|ttf|woff|zip|tar|gz|rar|bz2|jar|xpi|mov|mpeg|avi|mpg|flv|wmv|mp3|wav|aif|aiff|snd|wma|asf|asx|pcm|pdf|doc|docx|xls|xlsx|ppt|pptx|rtf|sqlite|sqlitedb|fla|swf|exe)$', re.I)
 
 
-def plugin_loaded():
-  global s
-  s = sublime.load_settings('Open-Include.sublime-settings')
-
-
 class OpenInclude(sublime_plugin.TextCommand):
   # run and look for different sources of paths
   def run(self, edit):
+    self.settings = sublime.load_settings('Open-Include.sublime-settings')
     window = sublime.active_window()
     view = self.view
     something_opened = False
@@ -29,7 +25,7 @@ class OpenInclude(sublime_plugin.TextCommand):
         opened = self.resolve_path(window, view, file_to_open)
 
         if not opened:
-          for extension in s.get('auto_extension'):
+          for extension in self.settings.get('auto_extension'):
             file_to_open = file_to_open.split('/')
             file_to_open[-1] = extension.get('prefix') + file_to_open[-1] + extension.get('extension')
             file_to_open = '/'.join(file_to_open)
@@ -38,7 +34,7 @@ class OpenInclude(sublime_plugin.TextCommand):
             if opened:
               break
 
-        if not opened and s.get('create_if_not_exists') and view.file_name() is not None and view.file_name() != '':
+        if not opened and self.settings.get('create_if_not_exists') and view.file_name() is not None and view.file_name() != '':
           path = self.resolve_relative(os.path.dirname(view.file_name()), view.substr(view.extract_scope(region.begin())).replace("'", '').replace('"', ''))
           branch, leaf = os.path.split(path)
           try:
@@ -89,7 +85,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 
     paths = paths.split('\n')
 
-    if s.get('use_strict'):
+    if self.settings.get('use_strict'):
       return self.try_open(window, self.resolve_relative(os.path.dirname(view.file_name()), paths[0]))
 
     # paths.append(paths[0].replace('../', ''))
@@ -118,7 +114,7 @@ class OpenInclude(sublime_plugin.TextCommand):
       }
 
       folder_structure = []
-      for i in range(s.get('maximum_folder_up')):
+      for i in range(self.settings.get('maximum_folder_up')):
         folder_structure.append("../" * i)
 
       # relative to view & view dir name
@@ -169,7 +165,7 @@ class OpenInclude(sublime_plugin.TextCommand):
   # try opening the resouce
   def try_open(self, window, maybe_path):
     if maybe_path[:7] == 'http://' or maybe_path[:8] == 'https://':
-      if BINARY.search(maybe_path) or s.get("open_http_in_browser", False):
+      if BINARY.search(maybe_path) or self.settings.get("open_http_in_browser", False):
         sublime.status_message("Opening in browser " + maybe_path)
         import webbrowser
         webbrowser.open_new_tab(maybe_path)
