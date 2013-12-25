@@ -1,21 +1,19 @@
 {
-    // Setting this to `true` will open every http link in your default browser
+    // Setting this to `true` will open every http link in your default
+    // browser and not attempt do download and open it in Sublime Text.
     "open_http_in_browser": false,
 
-    //strict means; the path needs to be complete and correct, if not the file will not open and the package will not attempt to find the file.
+    // If true the path needs to be complete and correct, otherwise the file
+    // will not open and the package will not attempt to find the file.
     "use_strict": false,
 
-    //will create the file if not exists
+    // Will create the file if doesn't exists.
     "create_if_not_exists" : false,
-    "maximum_folder_up" : 5, // how much should the plugin go up a directory
+    "maximum_folder_up" : 5, // How many directories the plugin should go up.
     "auto_extension" : [
-      {
-        "extension": ".scss",
-        "prefix"   : "_"
-      },
-      {
-        "extension": ".scss",
-        "prefix"   : "_"
-      }
+        {
+            "extension": ".scss",
+            "prefix"   : "_"
+        }
     ]
 }
