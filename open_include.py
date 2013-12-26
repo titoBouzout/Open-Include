@@ -1,11 +1,15 @@
-#!/usr/bin/env python2
-
-import sublime
-import sublime_plugin
 import os.path
 import re
 import threading
-from .Edit import Edit as Edit
+import urllib
+
+import sublime
+import sublime_plugin
+
+try:
+    from .Edit import Edit as Edit
+except:
+    from Edit import Edit as Edit
 
 BINARY = re.compile('\.(apng|png|jpg|gif|jpeg|bmp|psd|ai|cdr|ico|cache|sublime-package|eot|svgz|ttf|woff|zip|tar|gz|rar|bz2|jar|xpi|mov|mpeg|avi|mpg|flv|wmv|mp3|wav|aif|aiff|snd|wma|asf|asx|pcm|pdf|doc|docx|xls|xlsx|ppt|pptx|rtf|sqlite|sqlitedb|fla|swf|exe)$', re.I)
 
@@ -25,67 +29,87 @@ class OpenInclude(sublime_plugin.TextCommand):
         window = sublime.active_window()
         view = self.view
         something_opened = False
+
         for region in view.sel():
             opened = False
 
+
             # between quotes
             syntax = self.view.scope_name(region.begin())
-            if re.match(".*(parameter.url|string.quoted.(double|single))", syntax):
+            if re.search(r"(parameter\.url|string\.quoted\.(double|single))", syntax):
                 file_to_open = view.substr(view.extract_scope(region.begin()))
                 opened = self.resolve_path(window, view, file_to_open)
 
                 if not opened:
-                    for extension in s.get('auto_extension'):
-                        file_to_open = file_to_open.split('/')
-                        file_to_open[-1] = extension.get('prefix') + file_to_open[-1] + extension.get('extension')
-                        file_to_open = '/'.join(file_to_open)
 
                         opened = self.resolve_path(window, view, file_to_open)
                         if opened:
                             break
 
                 if not opened and s.get('create_if_not_exists') and view.file_name():
-                    path = self.resolve_relative(os.path.dirname(view.file_name()), view.substr(view.extract_scope(region.begin())).replace("'", '').replace('"', ''))
+                    file_name = view.substr(view.extract_scope(region.begin())).replace("'", '').replace('"', '')
+                    path = self.resolve_relative(os.path.dirname(view.file_name()), file_name)
                     branch, leaf = os.path.split(path)
                     try:
                         os.makedirs(branch)
                     except:
                         pass
                     window.open_file(path)
-                    return True
+                    opened = True
 
             # selected text
             if not opened:
-                opened = self.resolve_path(window, view, view.substr(sublime.Region(region.begin(), region.end())))
-
-            # current lines
-            if not opened:
-                opened = self.resolve_path(window, view, view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end())))
+                opened = self.resolve_path(window, view, view.substr(region))
 
             # current line quotes and parenthesis
             if not opened:
-                line = view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end()))
-                line = line.replace(')', '"').replace('(', '"').replace("'", '"')
-                lines = line.split('"')
-                for line in lines:
+                line = view.substr(view.line(region.begin()))
+                for line in re.split(r"[()'\"]", line):
                     line = line.strip()
                     if line:
                         opened = self.resolve_path(window, view, line)
                         if opened:
                             break
 
-            # current lines splitted by spaces or tabs
+            # selection expanded to full lines
             if not opened:
-                opened = self.resolve_path(window, view, view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end())).replace('\t', '\n').replace(' ', '\n'))
+                expanded_lines = view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end()))
+                opened = self.resolve_path(window, view, expanded_lines)
+
+                # split by spaces and tabs
+                if not opened:
+                    words = re.sub(r"\s+", "\n", expanded_lines)  #expanded_lines.replace('\t', '\n').replace(' ', '\n'))
+                    opened = self.resolve_path(window, view, words)
 
             if opened:
                 something_opened = True
+
+        # Nothing in a selected region could be opened
         if not something_opened:
-            self.resolve_path(window, view, view.substr(sublime.Region(0, view.size())).replace('\t', '\n'))
+            # This rarely helps and only creates a huge load of overload
+            # self.resolve_path(window, view, view.substr(sublime.Region(0, view.size())).replace('\t', '\n'))
+            sublime.status_message("Unable to find a file in the current selection")
+
+    def expand_paths_with_extensions(self, window, view, paths):
+
+        # Special file naming conventions, e.g. '_'+name+'.scss' + current extension
+        extensions = s.get('auto_extension', [])
+        if view.file_name():
+            file_ext = os.path.splitext(view.file_name())[1]
+            extensions.append(dict(extension=file_ext))
+
+        path_add = []
+        for path in paths:
+            if os.path.splitext(path)[1]:
+                continue
+            for extension in extensions:
+                subs = path.replace('\\', '/').split('/')
+                subs[-1] = extension.get('prefix', '') + subs[-1] + extension.get('extension', '')
+                path_add.append(os.path.join(*subs))
+        return paths + path_add
 
     # resolve the path of these sources and send to try_open
     def resolve_path(self, window, view, paths):
-        import urllib
         try:
             paths_decoded = urllib.unquote(paths.encode('utf8'))
             paths_decoded = unicode(paths_decoded.decode('utf8'))
@@ -98,9 +122,7 @@ class OpenInclude(sublime_plugin.TextCommand):
         if s.get('use_strict'):
             return self.try_open(window, self.resolve_relative(os.path.dirname(view.file_name()), paths[0]))
 
-        # paths.append(paths[0].replace('../', ''))
-        # paths.append(paths[0].replace('/', '/_'))
-        # paths = list(set(paths))
+        paths = self.expand_paths_with_extensions(window, view, paths)
 
         something_opened = False
 
@@ -109,95 +131,84 @@ class OpenInclude(sublime_plugin.TextCommand):
             if path == '':
                 continue
 
-            # extensions = ["", ".coffee", ".hbs", ".jade", ".js", ".scss", ".sass", ".styl", ".less"];
-            # for extension in extensions:
             # remove quotes
-            path = re.sub('^"|\'', '', re.sub('"|\'$', '', path))
+            path = re.sub(r'^("|\')|("|\')$', '', path)
 
             # remove :row:col
             path = re.sub('(\:[0-9]*)+$', '', path).strip()
 
-            relative_paths = {
-                "toView": view.file_name() or '',
-                "toViewDirname": os.path.dirname(view.file_name()) if view.file_name() else ''
-            }
-
-            folder_structure = []
-            for i in range(s.get('maximum_folder_up')):
-                folder_structure.append( "../" * i)
+            folder_structure = ["../" * i for i in range(s.get('maximum_folder_up', 5))]
 
             # relative to view & view dir name
-            something_opened = False
-            for new_path_prefix in folder_structure:
-                something_opened = self.create_path_relative_to_view( window, view, relative_paths['toView'], new_path_prefix + path)
-                if not something_opened:
-                    something_opened = self.create_path_relative_to_view( window, view, relative_paths['toViewDirname'], new_path_prefix + path)
-                else:
-                    break
+            opened = False
+            if view.file_name():
+                for new_path_prefix in folder_structure:
+                    maybe_path = os.path.dirname(view.file_name())
+                    opened = self.create_path_relative_to_folder(window, view, maybe_path, new_path_prefix + path)
+                    if not opened:
+                        maybe_path = os.path.dirname(maybe_path)
+                        opened = self.create_path_relative_to_folder(window, view, maybe_path, new_path_prefix + path)
+
+                    if opened:
+                        break
 
             # relative to project folders
-            if not something_opened:
+            if not opened:
                 for maybe_path in sublime.active_window().folders():
-                    something_opened = False
                     for new_path_prefix in folder_structure:
-                        if self.create_path_relative_to_project( window, maybe_path, new_path_prefix + path):
-                            something_opened = True
+                        if self.create_path_relative_to_folder(window, view, maybe_path, new_path_prefix + path):
+                            opened = True
                             break
-                    if something_opened:
+                    if opened:
                         break
 
             # absolute
-            if not something_opened:
-                something_opened = self.try_open(window, path)
-                if something_opened:
-                    something_opened = True
+            if not opened:
+                opened = self.try_open(window, path)
+                if opened:
+                    opened = True
+
+            if opened:
+                something_opened = True
 
         return something_opened
 
-    def create_path_relative_to_project(self, window, maybe_path, path):
-        something_opened = False
-
+    def create_path_relative_to_folder(self, window, view, maybe_path, path):
         maybe_path_tpm = self.resolve_relative(maybe_path, path)
-        opened = self.try_open(window, maybe_path_tpm)
-        if opened:
-            something_opened = True
-
-        return something_opened
-
-    def create_path_relative_to_view(self, window, view, relative_path, path):
-        something_opened = False
-        if not something_opened and view.file_name():
-            maybe_path = self.resolve_relative(os.path.dirname(relative_path), path)
-            something_opened = self.try_open(window, maybe_path)
-        return something_opened
+        return self.try_open(window, maybe_path_tpm)
 
     # try opening the resouce
     def try_open(self, window, maybe_path):
-        if maybe_path[:7] == 'http://' or maybe_path[:8] == 'https://':
+        # TODO: Add this somewhere WAY earlier since we are doing so much data
+        # processing regarding paths prior to this
+        if re.match(r'https?://', maybe_path):
+            # HTTP URL
             if BINARY.search(maybe_path) or s.get("open_http_in_browser", False):
                 sublime.status_message("Opening in browser " + maybe_path)
+
                 import webbrowser
                 webbrowser.open_new_tab(maybe_path)
-                return True
             else:
                 sublime.status_message("Opening URL " + maybe_path)
-                threading.Thread(target=self.read_url, args=(maybe_path, maybe_path)).start()
-                return True
+                # Create thread to download url in background
+                threading.Thread(target=self.read_url, args=(maybe_path,)).start()
 
-        if os.path.isfile(maybe_path):
+        elif os.path.isfile(maybe_path):
             if BINARY.search(maybe_path):
-                import sys
-                path = os.path.join(sublime.packages_path(), 'Open-Include')
-                if path not in sys.path:
-                    sys.path.append(path)
-                import desktop
+                # Binary file, open with associated application
+                try:
+                    import desktop
+                except:
+                    from .desktop import desktop
                 desktop.open(maybe_path)
             else:
+                # Open within ST
                 window.open_file(maybe_path)
             sublime.status_message("Opening file " + maybe_path)
-            return True
         else:
             return False
+
+        return True
 
     # util
     def resolve_relative(self, absolute, path):
@@ -207,10 +218,11 @@ class OpenInclude(sublime_plugin.TextCommand):
                 absolute = os.path.join(absolute, sub)
         return absolute
 
-    def read_url(self, url, so):
+    def read_url(self, url):
         try:
-            if url[:5] == 'https':
-                url = re.sub('^https', 'http', url)
+            if url.startswith('https'):
+                url = 'http' + url[5:]
+
             import urllib.request
             req = urllib.request.urlopen(url)
             content = req.read()
@@ -224,6 +236,7 @@ class OpenInclude(sublime_plugin.TextCommand):
                     content = str(content, 'utf8', errors="replace")
 
             content_type = req.headers['content-type'].split(';')[0]
+            # ST3 is thread-safe, but ST2 is not so we use set_timeout to get to the main thread again
             sublime.set_timeout(lambda: self.read_url_on_done(content, content_type), 0)
         except:
             pass
@@ -233,17 +246,19 @@ class OpenInclude(sublime_plugin.TextCommand):
             window = sublime.active_window()
             view = window.new_file()
             with Edit(view) as edit:
-                try:
-                    edit.insert(0, content)
-                except:
-                    pass
-                if content_type == 'text/html':
-                    view.settings().set('syntax', 'Packages/HTML/HTML.tmLanguage')
-                elif content_type == 'text/css':
-                    view.settings().set('syntax', 'Packages/CSS/CSS.tmLanguage')
-                elif content_type == 'text/javascript' or content_type == 'application/javascript' or content_type == 'application/x-javascript':
-                    view.settings().set('syntax', 'Packages/JavaScript/JavaScript.tmLanguage')
-                elif content_type == 'application/json' or content_type == 'text/json':
-                    view.settings().set('syntax', 'Packages/JavaScript/JSON.tmLanguage')
-                elif content_type == 'text/xml' or content_type == 'application/xml':
-                    view.settings().set('syntax', 'Packages/XML/XML.tmLanguage')
+                edit.insert(0, content)
+
+            # TODO: convert to a dict and include in settings
+            if content_type == 'text/html':
+                view.settings().set('syntax', 'Packages/HTML/HTML.tmLanguage')
+            elif content_type == 'text/css':
+                view.settings().set('syntax', 'Packages/CSS/CSS.tmLanguage')
+            elif content_type == 'text/javascript' or content_type == 'application/javascript' or content_type == 'application/x-javascript':
+                view.settings().set('syntax', 'Packages/JavaScript/JavaScript.tmLanguage')
+            elif content_type == 'application/json' or content_type == 'text/json':
+                view.settings().set('syntax', 'Packages/JavaScript/JSON.tmLanguage')
+            elif content_type == 'text/xml' or content_type == 'application/xml':
+                view.settings().set('syntax', 'Packages/XML/XML.tmLanguage')
+
+if int(sublime.version()) < 3000:
+    plugin_loaded()
