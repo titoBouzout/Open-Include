@@ -40,9 +40,9 @@ class OpenInclude(sublime_plugin.TextCommand):
                 opened = self.resolve_path(window, view, file_to_open)
 
                 if not opened:
-                        opened = self.resolve_path(window, view, file_to_open)
-                        if opened:
-                            break
+                    opened = self.resolve_path(window, view, file_to_open)
+                    if opened:
+                        break
 
                 if not opened and s.get('create_if_not_exists') and view.file_name():
                     file_name = view.substr(view.extract_scope(region.begin())).replace("'", '').replace('"', '')
