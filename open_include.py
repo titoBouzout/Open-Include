@@ -33,7 +33,6 @@ class OpenInclude(sublime_plugin.TextCommand):
         for region in view.sel():
             opened = False
 
-
             # between quotes
             syntax = self.view.scope_name(region.begin())
             if re.search(r"(parameter\.url|string\.quoted\.(double|single))", syntax):
@@ -41,7 +40,6 @@ class OpenInclude(sublime_plugin.TextCommand):
                 opened = self.resolve_path(window, view, file_to_open)
 
                 if not opened:
-
                         opened = self.resolve_path(window, view, file_to_open)
                         if opened:
                             break
@@ -78,7 +76,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 
                 # split by spaces and tabs
                 if not opened:
-                    words = re.sub(r"\s+", "\n", expanded_lines)  #expanded_lines.replace('\t', '\n').replace(' ', '\n'))
+                    words = re.sub(r"\s+", "\n", expanded_lines)  # expanded_lines.replace('\t', '\n').replace(' ', '\n'))
                     opened = self.resolve_path(window, view, words)
 
             if opened:
