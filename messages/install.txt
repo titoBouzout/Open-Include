@@ -1,0 +1,22 @@
+This plugin will try to open Sublime Text file paths found on
+selections/cursor when pressing "ALT+D". Supports files with the same
+extension by default but can be configured via settings to work with special
+file naming conventions (like scss includes). See below.
+
+Strings starting with http:// or https:// will open with default browser if
+binary, or we will read the file with urllib and open the result in a new
+view. By setting the `open_http_in_browser` setting in your user preferences
+to `true`, we will *always* open the default browser.
+
+`use_strict` preference will control if the path should be complete and
+correct, if not the file will not open and the package will not attempt to
+find the file.
+
+`auto_extension` preference can be used to specify special file naming
+conventions (like scss includes).
+
+If you have any bugs or feature requests, go here:
+https://github.com/SublimeText/Open-Include/issues
+
+If you want to contribute to the project, go here:
+https://github.com/SublimeText/Open-Include
