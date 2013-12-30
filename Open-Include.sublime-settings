@@ -9,7 +9,10 @@
 
     // Will create the file if doesn't exists.
     "create_if_not_exists" : false,
-    "maximum_folder_up" : 5, // How many directories the plugin should go up.
+    // How many directories the plugin should go up.
+    "maximum_folder_up" : 5,
+    // Additionally check for these combinations of extension and prefix when
+    // searching for a file
     "auto_extension" : [
         {
             "extension": ".scss",
