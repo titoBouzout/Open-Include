@@ -102,6 +102,7 @@ class OpenInclude(sublime_plugin.TextCommand):
                 continue
             for extension in extensions:
                 subs = path.replace('\\', '/').split('/')
+                subs[-1] = re.sub('("|\')', '', subs[-1]);
                 subs[-1] = extension.get('prefix', '') + subs[-1] + extension.get('extension', '')
                 path_add.append(os.path.join(*subs))
         return paths + path_add
