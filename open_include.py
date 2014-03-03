@@ -34,8 +34,7 @@ class OpenInclude(sublime_plugin.TextCommand):
             opened = False
 
             # between quotes
-            syntax = self.view.scope_name(region.begin())
-            if re.search(r"(parameter\.url|string\.quoted\.(double|single))", syntax):
+            if view.score_selector(region.begin(), "parameter.url, string.quoted"):
                 file_to_open = view.substr(view.extract_scope(region.begin()))
                 opened = self.resolve_path(window, view, file_to_open)
 
@@ -131,7 +130,7 @@ class OpenInclude(sublime_plugin.TextCommand):
                 continue
 
             # remove quotes
-            path = re.sub(r'^("|\')|("|\')$', '', path)
+            path = path.strip(r'"\'<>')  # re.sub(r'^("|\'|<)|("|\'|>)$', '', path) 
 
             # remove :row:col
             path = re.sub('(\:[0-9]*)+$', '', path).strip()
