@@ -35,6 +35,7 @@ function as follows:
 
 question.open("KDE") # Insists on KDE
 question.open("GNOME") # Insists on GNOME
+question.open("MATE") # Insists on MATE
 
 The dialogue box options are documented in each class's docstring.
 
@@ -241,6 +242,7 @@ class Dialogue:
     commands = {
         "KDE" : "kdialog",
         "GNOME" : "zenity",
+        "MATE" : "zenity",
         "XFCE" : "zenity", # NOTE: Based on observations with Xubuntu.
         "X11" : "Xdialog"
         }
@@ -256,7 +258,7 @@ class Dialogue:
         instead of guessing or detecting which environment is being used.
 
         Suggested values for 'desktop' are "standard", "KDE", "GNOME",
-        "Mac OS X", "Windows".
+        "MATE", "Mac OS X", "Windows".
 
         The result of the dialogue interaction may be a string indicating user
         input (for Input, Password, Menu, Pulldown), a list of strings
@@ -278,7 +280,7 @@ class Dialogue:
         try:
             program = self.commands[desktop_in_use]
         except KeyError:
-            raise OSError, "Desktop '%s' not supported (no known dialogue box command could be suggested)" % desktop_in_use
+            raise OSError("Desktop '%s' not supported (no known dialogue box command could be suggested)" % desktop_in_use)
 
         # The handler is one of the functions communicating with the subprocess.
         # Some handlers return boolean values, others strings.
@@ -473,7 +475,7 @@ class Pulldown(Menu):
         "Xdialog" : (_readvalue(_readfrom),
             ["--stdout", "--combobox", String("text"), Integer("height"), Integer("width"), Strings("items")]),
         }
-    item = unicode
+    item = str
     number_of_titles = 2
 
 class Input(Simple):
@@ -544,6 +546,6 @@ available = [Question, Warning, Message, Error, Menu, CheckList, RadioList, Inpu
 
 # Supported desktop environments.
 
-supported = Dialogue.commands.keys()
+supported = list(Dialogue.commands.keys())
 
 # vim: tabstop=4 expandtab shiftwidth=4
