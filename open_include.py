@@ -130,7 +130,7 @@ class OpenInclude(sublime_plugin.TextCommand):
                 continue
 
             # remove quotes
-            path = path.strip(r'"\'<>')  # re.sub(r'^("|\'|<)|("|\'|>)$', '', path) 
+            path = path.strip(r'"\'<>')  # re.sub(r'^("|\'|<)|("|\'|>)$', '', path)
 
             # remove :row:col
             path = re.sub('(\:[0-9]*)+$', '', path).strip()
@@ -197,7 +197,7 @@ class OpenInclude(sublime_plugin.TextCommand):
                 try:
                     import desktop
                 except:
-                    from .desktop import desktop
+                    from . import desktop
                 desktop.open(maybe_path)
             else:
                 # Open within ST
