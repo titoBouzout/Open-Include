@@ -11,8 +11,10 @@ try:
 except:
     from Edit import Edit as Edit
 
-BINARY = re.compile('\.(apng|png|jpg|gif|jpeg|bmp|psd|ai|cdr|ico|cache|sublime-package|eot|svgz|ttf|woff|zip|tar|gz|rar|bz2|jar|xpi|mov|mpeg|avi|mpg|flv|wmv|mp3|wav|aif|aiff|snd|wma|asf|asx|pcm|pdf|doc|docx|xls|xlsx|ppt|pptx|rtf|sqlite|sqlitedb|fla|swf|exe)$', re.I)
+BINARY = re.compile('\.(psd|ai|cdr|ico|cache|sublime-package|eot|svgz|ttf|woff|zip|tar|gz|rar|bz2|jar|xpi|mov|mpeg|avi|mpg|flv|wmv|mp3|wav|aif|aiff|snd|wma|asf|asx|pcm|pdf|doc|docx|xls|xlsx|ppt|pptx|rtf|sqlite|sqlitedb|fla|swf|exe)$', re.I)
+IMAGE = re.compile('\.(apng|png|jpg|gif|jpeg|bmp)$', re.I)
 
+sublime.active_window().open_file('/path/to/image.png') 
 # global settings container
 s = None
 
@@ -192,8 +194,9 @@ class OpenInclude(sublime_plugin.TextCommand):
                 threading.Thread(target=self.read_url, args=(maybe_path,)).start()
 
         elif os.path.isfile(maybe_path):
-            if BINARY.search(maybe_path):
-                # Binary file, open with associated application
+            if IMAGE.search(maybe_path):
+                window.open_file(maybe_path) 
+           elif BINARY.search(maybe_path):
                 try:
                     import desktop
                 except:
