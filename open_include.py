@@ -194,7 +194,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 
         elif os.path.isfile(maybe_path):
             if IMAGE.search(maybe_path):
-                window.open_file(maybe_path) 
+                window.open_file(maybe_path)
             elif BINARY.search(maybe_path):
                 try:
                     import desktop

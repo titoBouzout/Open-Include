@@ -1,0 +1,4 @@
+[
+	{ "keys": ["alt+d"], "command": "open_include"},
+	{ "keys": ["ctrl+alt+o"],  "command": "open_file_from_env" }
+]

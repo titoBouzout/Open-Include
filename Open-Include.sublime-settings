@@ -18,5 +18,39 @@
             "extension": ".scss",
             "prefix"   : "_"
         }
-    ]
+    ],
+
+    "environment" : [],
+
+    // Option used by the panel control to change the files to open strategy
+    // true:  Offers to open all file of an environment if the file is available in it
+    // false: Offers to open the first file of the environment which is already opened in st
+    //          or the file of the environment of the main path
+    "expand_alias": true
+
+    /* Example:
+        current file name: /main/path/to/UAT/Project/file_name
+        other file opened: /alias/to/Dev/Project/file_name
+        base_name: Project/file_name
+
+        "environment":
+        [
+            { "Prod" : [ "/main/path/to/Prod/", "/alias/to/Prod/", "/another/alias/to/Prod/" ] },
+            { "Dev" : [ "/main/path/to/Dev/", "/alias/to/Dev/" ] },
+            { "UAT" : [ "/main/path/to/UAT/" ] },
+            { "Prod" : [ "/main/path/to/another/Project/Prod" ] },
+            { "Dev" : [ "/main/path/to/another/Project/Dev" ] }
+        ],
+
+        Files to open ("expand_alias": true):
+            /main/path/to/Prod/Project/file_name
+            /alias/to/Prod/Project/file_name
+            /another/alias/to/Prod/Project/file_name
+            /main/path/to/Dev/Project/file_name
+            /alias/to/Dev/Project/file_name
+
+        Files to open ("expand_alias": false):
+            /main/path/to/Prod/Project/file_name
+            /alias/to/Dev/Project/file_name
+    */
 }
