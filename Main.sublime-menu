@@ -16,21 +16,64 @@
 						"children":
 						[
 							{
-								"caption": "Settings – Default",
-
-								"command": "open_file", "args":
-								{
-									"file": "${packages}/Open-Include/Open-Include.sublime-settings"
-								}
+								"command": "open_file",
+								"args": {"file": "${packages}/Open-Include/Open-Include.sublime-settings"},
+								"caption": "Settings – Default"
 							},
 							{
-								"caption": "Settings – User",
-
-								"command": "open_file", "args":
-								{
-									"file": "${packages}/User/Open-Include.sublime-settings"
-								}
-							}
+								"command": "open_file",
+								"args": {"file": "${packages}/User/Open-Include.sublime-settings"},
+								"caption": "Settings – User"
+							},
+							{ "caption": "-" },
+							{
+								"command": "open_file",
+								"args": {
+									"file": "${packages}/Open-Include/Default (Windows).sublime-keymap",
+									"platform": "Windows"
+								},
+								"caption": "Key Bindings – Default"
+							},
+							{
+								"command": "open_file",
+								"args": {
+									"file": "${packages}/Open-Include/Default (OSX).sublime-keymap",
+									"platform": "OSX"
+								},
+								"caption": "Key Bindings – Default"
+							},
+							{
+								"command": "open_file",
+								"args": {
+									"file": "${packages}/Open-Include/Default (Linux).sublime-keymap",
+									"platform": "Linux"
+								},
+								"caption": "Key Bindings – Default"
+							},{
+								"command": "open_file",
+								"args": {
+									"file": "${packages}/User/Default (Windows).sublime-keymap",
+									"platform": "Windows"
+								},
+								"caption": "Key Bindings – User"
+							},
+							{
+								"command": "open_file",
+								"args": {
+									"file": "${packages}/User/Default (OSX).sublime-keymap",
+									"platform": "OSX"
+								},
+								"caption": "Key Bindings – User"
+							},
+							{
+								"command": "open_file",
+								"args": {
+									"file": "${packages}/User/Default (Linux).sublime-keymap",
+									"platform": "Linux"
+								},
+								"caption": "Key Bindings – User"
+							},
+							{ "caption": "-" }
 						]
 					}
 				]
