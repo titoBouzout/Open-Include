@@ -16,6 +16,7 @@ Sources:
 - Full lines covered by caret positions or selections.
 - Current lines splitted by spaces or tabs
 - Full text
+- Selected line number and file in Find Results panel
 
 Resolving:
 ------------------
@@ -38,3 +39,4 @@ Contributors:
 - [kizu](https://github.com/kizu)
 - [i-akhmadullin](https://github.com/i-akhmadullin)
 - [hoest](https://github.com/hoest)
+- [Raine](https://github.com/metaraine)
