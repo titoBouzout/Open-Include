@@ -15,6 +15,7 @@ Sources:
 - Selected text.
 - Full lines covered by caret positions or selections.
 - Current lines splitted by spaces or tabs
+- Full text
 
 Resolving:
 ------------------

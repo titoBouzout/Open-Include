@@ -39,10 +39,8 @@ class OpenInclude(sublime_plugin.TextCommand):
                 file_to_open = view.substr(view.extract_scope(region.begin()))
                 opened = self.resolve_path(window, view, file_to_open)
 
-                if not opened:
-                    opened = self.resolve_path(window, view, file_to_open)
-                    if opened:
-                        break
+                if opened:
+                    break
 
                 if not opened and s.get('create_if_not_exists') and view.file_name():
                     file_name = view.substr(view.extract_scope(region.begin())).replace("'", '').replace('"', '')
@@ -54,6 +52,11 @@ class OpenInclude(sublime_plugin.TextCommand):
                         pass
                     window.open_file(path)
                     opened = True
+
+            # word
+            if not opened:
+                file_to_open = view.substr(view.word(region)).strip()
+                opened = self.resolve_path(window, view, file_to_open)
 
             # selected text
             if not opened:
@@ -84,9 +87,9 @@ class OpenInclude(sublime_plugin.TextCommand):
 
         # Nothing in a selected region could be opened
         if not something_opened:
-            # This rarely helps and only creates a huge load of overload
-            # self.resolve_path(window, view, view.substr(sublime.Region(0, view.size())).replace('\t', '\n'))
-            sublime.status_message("Unable to find a file in the current selection")
+            opened = self.resolve_path(window, view, view.substr(sublime.Region(0, view.size())).replace('\t', '\n'))
+            if not opened:
+            	sublime.status_message("Unable to find a file in the current selection")
 
     def expand_paths_with_extensions(self, window, view, paths):
 
