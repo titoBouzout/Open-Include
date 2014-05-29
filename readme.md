@@ -44,3 +44,5 @@ Contributors:
 - [hoest](https://github.com/hoest)
 - [Raine](https://github.com/metaraine)
 - [jacobo-diaz](https://github.com/jacobo-diaz)
+- [iamntz](https://github.com/iamntz)
+- [Starli0n](https://github.com/Starli0n)

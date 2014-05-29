@@ -242,6 +242,7 @@ class OpenIncludeThread(threading.Thread):
             for dir in os_listdir(branch):
                 for path in paths:
                     paths2.append(os.path.join(dir, path))
+
         return list(set(paths2))
 
     # resolve the path of these sources and send to try_open
