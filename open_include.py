@@ -32,6 +32,8 @@ def reset_cache():
     cache['os_is_dir'] = {}
     cache['done'] = {}
     cache['look_into_folders'] = False
+    cache['running'] = False
+
 reset_cache()
 
 def normalize(path):
@@ -69,16 +71,25 @@ def plugin_loaded():
     global s
     s = sublime.load_settings('Open-Include.sublime-settings')
 
+
 class OpenInclude(sublime_plugin.TextCommand):
-
-    # run and look for different sources of paths
-
     def run(self, edit = None):
         global cache
+        if not cache['running']:
+            OpenIncludeThread().start()
+
+class OpenIncludeThread(threading.Thread):
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self):
+        global cache
+        cache['running'] = True
         if debug:
             print('running')
         window = sublime.active_window()
-        view = self.view
+        view = window.active_view()
         something_opened = False
 
         for region in view.sel():
@@ -116,7 +127,7 @@ class OpenInclude(sublime_plugin.TextCommand):
                         os.makedirs(branch)
                     except:
                         pass
-                    window.open_file(path)
+                    self.open(window, path)
                     opened = True
 
             # current line quotes and parenthesis
@@ -196,13 +207,17 @@ class OpenInclude(sublime_plugin.TextCommand):
 
     def expand_paths_with_sub_and_parent_folders(self, window, view, paths):
 
+        paths2 = []
+        for path in paths:
+            paths2.append(path)
         if not view.file_name():
-            return paths
+            # folders of opened views
+            for _view in window.views():
+                if _view.file_name():
+                    branch, leaf = os.path.split(_view.file_name())
+                    for path in paths:
+                        paths2.append(os.path.join(branch, path))
         else:
-            paths2 = []
-            for path in paths:
-                paths2.append(path)
-
             # subfolders
             branch, leaf = os.path.split(view.file_name())
             for dir in os_listdir(branch):
@@ -214,7 +229,20 @@ class OpenInclude(sublime_plugin.TextCommand):
             for dir in os_listdir(branch):
                 for path in paths:
                     paths2.append(os.path.join(dir, path))
-            return paths2;
+
+            # folders of opened views
+            for _view in window.views():
+                if _view.file_name():
+                    branch, leaf = os.path.split(_view.file_name())
+                    for path in paths:
+                        paths2.append(os.path.join(branch, path))
+
+        # subfolders of the project folders
+        for branch in window.folders():
+            for dir in os_listdir(branch):
+                for path in paths:
+                    paths2.append(os.path.join(dir, path))
+        return list(set(paths2))
 
     # resolve the path of these sources and send to try_open
     def resolve_path(self, window, view, paths, skip_folders = False):
@@ -238,6 +266,8 @@ class OpenInclude(sublime_plugin.TextCommand):
             paths = self.expand_paths_with_sub_and_parent_folders(window, view, paths)
 
         something_opened = False
+
+        paths = list(set(paths))
 
         for path in paths:
             path = path.strip()
@@ -309,7 +339,7 @@ class OpenInclude(sublime_plugin.TextCommand):
 
         elif os_is_file(maybe_path):
             if IMAGE.search(maybe_path):
-                window.open_file(maybe_path)
+                self.open(window, maybe_path)
             elif BINARY.search(maybe_path):
                 try:
                     import desktop
@@ -318,7 +348,7 @@ class OpenInclude(sublime_plugin.TextCommand):
                 desktop.open(maybe_path)
             else:
                 # Open within ST
-                window.open_file(maybe_path)
+                self.open(window, maybe_path)
             sublime.status_message("Opening file " + maybe_path)
         else:
             return False
@@ -374,6 +404,12 @@ class OpenInclude(sublime_plugin.TextCommand):
                 view.settings().set('syntax', 'Packages/JavaScript/JSON.tmLanguage')
             elif content_type == 'text/xml' or content_type == 'application/xml':
                 view.settings().set('syntax', 'Packages/XML/XML.tmLanguage')
+
+    def open(self, window, path):
+        if s.get('in_secondary_colum', False):
+            window.run_command('set_layout', {"cols": [0.0, 0.5, 1.0], "rows": [0.0, 1.0], "cells": [[0, 0, 1, 1], [1, 0, 2, 1]]})
+            window.focus_group(1)
+        window.open_file(path)
 
 class OpenIncludeFindInFileGoto():
     def run(self, view):

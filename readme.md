@@ -32,6 +32,7 @@ Will try to resolve to:
 - Absolute path
 - Relative to all subfolders
 - Relative to all parent folders
+- Relative to the folder of all views
 
 Contributors:
 ---
