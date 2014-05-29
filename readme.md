@@ -30,6 +30,8 @@ Will try to resolve to:
 - Relative to project folders minus 1 folder
 - Relative to project folders minus 2 folders
 - Absolute path
+- Relative to all subfolders
+- Relative to all parent folders
 
 Contributors:
 ---
@@ -40,3 +42,4 @@ Contributors:
 - [i-akhmadullin](https://github.com/i-akhmadullin)
 - [hoest](https://github.com/hoest)
 - [Raine](https://github.com/metaraine)
+- [jacobo-diaz](https://github.com/jacobo-diaz)
