@@ -57,6 +57,14 @@ class OpenInclude(sublime_plugin.TextCommand):
                     window.open_file(path)
                     opened = True
 
+            # between curly brackets
+            if not opened:
+                file_to_open = view.substr(view.extract_scope(region.begin())).replace('{','').replace('}','')
+                opened = self.resolve_path(window, view, file_to_open)
+
+                if opened:
+                    break
+
             # word
             if not opened:
                 file_to_open = view.substr(view.word(region)).strip()
