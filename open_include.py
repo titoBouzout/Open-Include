@@ -18,7 +18,7 @@ IMAGE = re.compile('\.(apng|png|jpg|gif|jpeg|bmp)$', re.I)
 s = None
 
 debug = False
-
+ST2 = False
 cache = {}
 
 def reset_cache():
@@ -76,7 +76,10 @@ class OpenInclude(sublime_plugin.TextCommand):
     def run(self, edit = None):
         global cache
         if not cache['running']:
-            OpenIncludeThread().start()
+            if ST2:
+                OpenIncludeThread().run()
+            else:
+                OpenIncludeThread().start()
 
 class OpenIncludeThread(threading.Thread):
 
@@ -446,4 +449,6 @@ class OpenIncludeFindInFileGoto():
         return None
 
 if int(sublime.version()) < 3000:
+    global ST2
+    ST2 = True
     plugin_loaded()
