@@ -53,7 +53,10 @@ def os_exists(path):
     global cache
     id = normalize(path)
     if id not in cache['os_exists']:
-        cache['os_exists'][id] = os.path.lexists(path)
+        try:
+            cache['os_exists'][id] = os.path.lexists(path)
+        except:
+            cache['os_exists'][id] = False
     return cache['os_exists'][id]
 
 def os_is_file(path):
