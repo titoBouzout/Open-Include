@@ -43,7 +43,10 @@ def os_listdir(path):
     global cache
     id = normalize(path)
     if id not in cache['os_listdir']:
-        cache['os_listdir'][id] = [os.path.join(path, x) for x in os.listdir(path) if os_is_dir(os.path.join(path, x))]
+        try:
+            cache['os_listdir'][id] = [os.path.join(path, x) for x in os.listdir(path) if os_is_dir(os.path.join(path, x))]
+        except:
+            cache['os_listdir'][id] = []
     return cache['os_listdir'][id]
 
 def os_exists(path):
