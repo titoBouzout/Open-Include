@@ -455,6 +455,5 @@ class OpenIncludeFindInFileGoto():
         return None
 
 if int(sublime.version()) < 3000:
-    global ST2
     ST2 = True
     plugin_loaded()
