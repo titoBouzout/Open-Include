@@ -129,17 +129,16 @@ class OpenIncludeThread(threading.Thread):
                     break
 
                 if not opened and s.get('create_if_not_exists') and view.file_name():
-                    file_name = view.substr(view.extract_scope(region.begin())).replace('"', '').replace("'", '')
-                    if re.match('https?://', file_name):
+                    if re.match('https?://', file_to_open):
                     	pass
                     else:
-	                    file_name = self.resolve_relative(os.path.dirname(view.file_name()), file_name)
-	                    branch, leaf = os.path.split(file_name)
+	                    file_to_open = self.resolve_relative(os.path.dirname(view.file_name()), file_to_open)
+	                    branch, leaf = os.path.split(file_to_open)
 	                    try:
 	                        os.makedirs(branch)
 	                    except:
 	                        pass
-	                    self.open(window, file_name)
+	                    self.open(window, file_to_open)
 	                    opened = True
 
             # current line quotes and parenthesis
