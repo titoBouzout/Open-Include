@@ -120,7 +120,7 @@ class OpenIncludeThread(threading.Thread):
 
             # quoted
             if not opened and view.score_selector(region.begin(), "parameter.url, string.quoted"):
-                file_to_open = view.substr(view.extract_scope(region.begin()))
+                file_to_open = view.substr(view.extract_scope(region.begin())).replace('"', '').replace("'", '')
                 if debug:
                     print('quotes')
                 opened = self.resolve_path(window, view, file_to_open)
@@ -129,15 +129,18 @@ class OpenIncludeThread(threading.Thread):
                     break
 
                 if not opened and s.get('create_if_not_exists') and view.file_name():
-                    file_name = view.substr(view.extract_scope(region.begin()))
-                    path = self.resolve_relative(os.path.dirname(view.file_name()), file_name)
-                    branch, leaf = os.path.split(path)
-                    try:
-                        os.makedirs(branch)
-                    except:
-                        pass
-                    self.open(window, path)
-                    opened = True
+                    file_name = view.substr(view.extract_scope(region.begin())).replace('"', '').replace("'", '')
+                    if re.match('https?://', file_name):
+                    	pass
+                    else:
+	                    file_name = self.resolve_relative(os.path.dirname(view.file_name()), file_name)
+	                    branch, leaf = os.path.split(file_name)
+	                    try:
+	                        os.makedirs(branch)
+	                    except:
+	                        pass
+	                    self.open(window, file_name)
+	                    opened = True
 
             # current line quotes and parenthesis
             if not opened:
