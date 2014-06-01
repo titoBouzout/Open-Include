@@ -125,9 +125,6 @@ class OpenIncludeThread(threading.Thread):
                     print('quotes')
                 opened = self.resolve_path(window, view, file_to_open)
 
-                if opened:
-                    break
-
                 if not opened and s.get('create_if_not_exists') and view.file_name():
                     if re.match('https?://', file_to_open):
                     	pass
@@ -268,7 +265,10 @@ class OpenIncludeThread(threading.Thread):
         except:
             pass
 
-        paths = paths.split('\n')
+        paths = paths.strip().split('\n')
+
+        if re.match(r'https?://', paths[0]):
+            return self.try_open(window, paths[0])
 
         if s.get('use_strict'):
             return self.try_open(window, self.resolve_relative(os.path.dirname(view.file_name()), paths[0]))
@@ -321,8 +321,6 @@ class OpenIncludeThread(threading.Thread):
             # absolute
             if not opened:
                 opened = self.try_open(window, path)
-                if opened:
-                    opened = True
 
             if opened:
                 something_opened = True
