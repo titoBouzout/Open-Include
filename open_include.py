@@ -18,7 +18,7 @@ IMAGE = re.compile('\.(apng|png|jpg|gif|jpeg|bmp)$', re.I)
 s = None
 
 debug = False
-ST2 = False
+ST2 = int(sublime.version()) < 3000
 cache = {}
 
 def reset_cache():
@@ -457,5 +457,4 @@ class OpenIncludeFindInFileGoto():
         return None
 
 if int(sublime.version()) < 3000:
-    ST2 = True
     plugin_loaded()
