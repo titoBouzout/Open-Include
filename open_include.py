@@ -138,6 +138,13 @@ class OpenIncludeThread(threading.Thread):
 	                    self.open(window, file_to_open)
 	                    opened = True
 
+            # selection expanded to full lines
+            if not opened:
+                expanded_lines = view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end()))
+                if debug:
+                    print('expanded lines')
+                opened = self.resolve_path(window, view, expanded_lines)
+
             # current line quotes and parenthesis
             if not opened:
                 line = view.substr(view.line(region.begin()))
@@ -151,17 +158,11 @@ class OpenIncludeThread(threading.Thread):
                         if opened:
                             break
 
-            # selection expanded to full lines
+            # split by spaces and tabs
             if not opened:
-                expanded_lines = view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end()))
-                if debug:
-                    print('expanded lines')
-                opened = self.resolve_path(window, view, expanded_lines)
+                words = re.sub("\s+", "\n", expanded_lines)  # expanded_lines.replace('\t', '\n').replace(' ', '\n'))
+                opened = self.resolve_path(window, view, words)
 
-                # split by spaces and tabs
-                if not opened:
-                    words = re.sub(r"\s+", "\n", expanded_lines)  # expanded_lines.replace('\t', '\n').replace(' ', '\n'))
-                    opened = self.resolve_path(window, view, words)
             # word
             if not opened:
                 file_to_open = view.substr(view.word(region)).strip()
