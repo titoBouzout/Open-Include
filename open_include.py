@@ -361,6 +361,14 @@ class OpenIncludeThread(threading.Thread):
                 # Open within ST
                 self.open(window, maybe_path)
             sublime.status_message("Opening file " + maybe_path)
+
+        elif os.path.isdir(maybe_path):
+            # Walkaround for UNC path
+            if maybe_path[0] == '\\':
+                maybe_path = '\\' + maybe_path
+            self.view.window().run_command("open_dir", {"dir": maybe_path})
+            sublime.status_message("Opening folder " + maybe_path)
+
         else:
             return False
 
