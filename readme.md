@@ -53,6 +53,15 @@ If everything else fails will also look into:
 
 -   Relative to all parent folders
 
+## Reporting an error somewhere
+
+Please, To report an error provide the following information:
+
+1. Project path (ex: "c:/www/website")
+2. Opened file path (ex: "c:/www/website/index.html")
+3. Included file line code (ex: a href="../html/views/home/Content/base/t16.shtml" ....
+4. Exact location of included file, in t16.shtml (ex "c:/www/website/views/home/Content/base/t16.shtml" )
+
 ## Contributors:
 
 -   [titoBouzout][]
