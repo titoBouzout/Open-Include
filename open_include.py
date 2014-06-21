@@ -33,6 +33,7 @@ def reset_cache():
     cache['done'] = {}
     cache['look_into_folders'] = False
     cache['running'] = False
+    cache['folder'] = False
 
 reset_cache()
 
@@ -185,11 +186,18 @@ class OpenIncludeThread(threading.Thread):
                 if debug:
                     print('looking into the whole view')
                 opened = self.resolve_path(window, view, view.substr(sublime.Region(0, 10485760 if view.size() > 10485760 else view.size())).replace('\t', '\n'), True)
-            reset_cache()
             if not opened:
-                sublime.status_message("Unable to find a file in the current selection")
-                return False
+                if cache['folder']:
+                    window.run_command("open_dir", {"dir": cache['folder']})
+                    sublime.status_message("Opening folder: " + cache['folder'])
+                    reset_cache()
+                    return True
+                else:
+                    sublime.status_message("Unable to find a file in the current selection")
+                    reset_cache()
+                    return False
             else:
+                reset_cache()
                 return True
         else:
             reset_cache()
@@ -334,6 +342,7 @@ class OpenIncludeThread(threading.Thread):
 
     # try opening the resouce
     def try_open(self, window, maybe_path):
+        global cache
         # TODO: Add this somewhere WAY earlier since we are doing so much data
         # processing regarding paths prior to this
         if re.match(r'https?://', maybe_path):
@@ -362,12 +371,12 @@ class OpenIncludeThread(threading.Thread):
                 self.open(window, maybe_path)
             sublime.status_message("Opening file " + maybe_path)
 
-        elif os.path.isdir(maybe_path):
+        elif os.path.isdir(maybe_path) and not cache['folder']:
             # Walkaround for UNC path
             if maybe_path[0] == '\\':
                 maybe_path = '\\' + maybe_path
-            self.view.window().run_command("open_dir", {"dir": maybe_path})
-            sublime.status_message("Opening folder " + maybe_path)
+            cache['folder'] = maybe_path
+            return False
 
         else:
             return False
