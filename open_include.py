@@ -297,7 +297,8 @@ class OpenIncludeThread(threading.Thread):
             cache['done'][path] = True
 
             # remove quotes
-            path = path.strip('"\'<>\(\)\{\}')  # re.sub(r'^("|\'|<)|("|\'|>)$', '', path)
+            # path = path.strip('"\'<>\(\)\{\}')  #
+            path = re.sub('"|\'|<|>|\(|\)|\{|\}', '', path)
 
             # remove :row:col
             path = re.sub('(\:[0-9]*)+$', '', path).strip()
