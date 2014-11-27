@@ -118,6 +118,11 @@ class OpenIncludeThread(threading.Thread):
                     print('selected')
                     print(view.substr(region))
                 opened = self.resolve_path(window, view, view.substr(region))
+                if not opened and cache['folder'] and view.substr(region) == cache['folder']:
+                    window.run_command("open_dir", {"dir": cache['folder']})
+                    sublime.status_message("Opening folder: " + cache['folder'])
+                    reset_cache()
+                    return True
 
             # quoted
             if not opened and view.score_selector(region.begin(), "parameter.url, string.quoted"):
