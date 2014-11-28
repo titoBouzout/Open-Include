@@ -1,65 +1,69 @@
 {
-    // Setting this to `true` will open every http link in your default
-    // browser and not attempt do download and open it in Sublime Text.
-    "open_http_in_browser": false,
+	// Setting this to `true` will open every http link in your default
+	// browser and not attempt do download and open it in Sublime Text.
+	"open_http_in_browser": false,
 
-    // If true the path needs to be complete and correct, otherwise the file
-    // will not open and the package will not attempt to find the file.
-    "use_strict": false,
+	// If true the path needs to be complete and correct, otherwise the file
+	// will not open and the package will not attempt to find the file.
+	"use_strict": false,
 
-    // Will create the file if doesn't exists.
-    "create_if_not_exists" : false,
+	// Will create the file if doesn't exists.
+	"create_if_not_exists": false,
 
-    // How many directories the plugin should go up.
-    "maximum_folder_up" : 7,
+	// How many directories the plugin should go up.
+	"maximum_folder_up": 7,
 
-    // splits the view, and open the file in a secondary column
-    "in_secondary_colum":false,
+	// splits the view, and open the file in a secondary column
+	"in_secondary_colum": false,
 
-    // Additionally check for these combinations of extension and prefix when
-    // searching for a file
-    "auto_extension" : [
-        {
-            "extension": ".scss",
-            "prefix"   : "_"
-        },
-        {
-            "extension": "",
-            "prefix"   : "../templates/"
-        }
-    ],
+	// Additionally check for these combinations of extension and prefix when
+	// searching for a file
+	"auto_extension": [
+		{
+			"extension": ".scss",
+			"prefix": "_"
+		},
+		{
+			"extension": "",
+			"prefix": "../templates/"
+		},
+		{
+			"extension": "/index.js",
+			"prefix": ""
+		},
+	],
 
-    "environment" : [],
+	"environment": [],
 
-    // Option used by the panel control to change the files to open strategy
-    // true:  Offers to open all file of an environment if the file is available in it
-    // false: Offers to open the first file of the environment which is already opened in st
-    //          or the file of the environment of the main path
-    "expand_alias": true
+	// Option used by the panel control to change the files to open strategy
+	// true:  Offers to open all file of an environment if the file is available in it
+	// false: Offers to open the first file of the environment which is already opened in st
+	//          or the file of the environment of the main path
+	"expand_alias": true
 
-    /* Example:
-        current file name: /main/path/to/UAT/Project/file_name
-        other file opened: /alias/to/Dev/Project/file_name
-        base_name: Project/file_name
+	/* Example:
+		current file name: /main/path/to/UAT/Project/file_name
+		other file opened: /alias/to/Dev/Project/file_name
+		base_name: Project/file_name
 
-        "environment":
-        [
-            { "Prod" : [ "/main/path/to/Prod/", "/alias/to/Prod/", "/another/alias/to/Prod/" ] },
-            { "Dev" : [ "/main/path/to/Dev/", "/alias/to/Dev/" ] },
-            { "UAT" : [ "/main/path/to/UAT/" ] },
-            { "Prod" : [ "/main/path/to/another/Project/Prod" ] },
-            { "Dev" : [ "/main/path/to/another/Project/Dev" ] }
-        ],
+		"environment":
+		[
+			{ "Prod" : [ "/main/path/to/Prod/", "/alias/to/Prod/", "/another/alias/to/Prod/" ] },
+			{ "Dev" : [ "/main/path/to/Dev/", "/alias/to/Dev/" ] },
+			{ "UAT" : [ "/main/path/to/UAT/" ] },
+			{ "Prod" : [ "/main/path/to/another/Project/Prod" ] },
+			{ "Dev" : [ "/main/path/to/another/Project/Dev" ] }
+		],
 
-        Files to open ("expand_alias": true):
-            /main/path/to/Prod/Project/file_name
-            /alias/to/Prod/Project/file_name
-            /another/alias/to/Prod/Project/file_name
-            /main/path/to/Dev/Project/file_name
-            /alias/to/Dev/Project/file_name
+		Files to open ("expand_alias": true):
+			/main/path/to/Prod/Project/file_name
+			/alias/to/Prod/Project/file_name
+			/another/alias/to/Prod/Project/file_name
+			/main/path/to/Dev/Project/file_name
+			/alias/to/Dev/Project/file_name
 
-        Files to open ("expand_alias": false):
-            /main/path/to/Prod/Project/file_name
-            /alias/to/Dev/Project/file_name
-    */
+		Files to open ("expand_alias": false):
+			/main/path/to/Prod/Project/file_name
+			/alias/to/Dev/Project/file_name
+	*/
 }
