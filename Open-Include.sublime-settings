@@ -30,7 +30,7 @@
 		{
 			"extension": "/index.js",
 			"prefix": ""
-		},
+		}
 	],
 
 	"environment": [],
