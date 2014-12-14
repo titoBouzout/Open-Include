@@ -16,7 +16,7 @@ find the file.
 conventions (like scss includes).
 
 If you have any bugs or feature requests, go here:
-https://github.com/SublimeText/Open-Include/issues
+https://github.com/titoBouzout/Open-Include/issues
 
 If you want to contribute to the project, go here:
-https://github.com/SublimeText/Open-Include
+https://github.com/titoBouzout/Open-Include
