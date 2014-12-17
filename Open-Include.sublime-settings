@@ -19,14 +19,17 @@
 	// Additionally check for these combinations of extension and prefix when
 	// searching for a file
 	"auto_extension": [
-		{
-			"extension": ".scss",
-			"prefix": "_"
-		},
+		// general
 		{
 			"extension": "",
 			"prefix": "../templates/"
 		},
+		// css
+		{
+			"extension": ".scss",
+			"prefix": "_"
+		},
+		// node.js
 		{
 			"extension": "/index.js",
 			"prefix": ""
