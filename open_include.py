@@ -217,15 +217,19 @@ class OpenIncludeThread(threading.Thread):
             extensions.append(dict(extension=file_ext))
 
         path_add = []
+
         for path in paths:
-            if os.path.splitext(path)[1]:
-                continue
+            extension_original = os.path.splitext(path)[1]
             for extension in extensions:
-                subs = path.replace('\\', '/').split('/')
-                subs[-1] = re.sub('("|\')', '', subs[-1]);
-                subs[-1] = extension.get('prefix', '') + subs[-1] + extension.get('extension', '')
-                path_add.append(os.path.join(*subs))
-        return paths + path_add
+                if not extension_original:
+                    subs = path.replace('\\', '/').split('/')
+                    subs[-1] = re.sub('("|\')', '', subs[-1]);
+                    subs[-1] = extension.get('prefix', '') + subs[-1] + extension.get('extension', '')
+                    path_add.append(os.path.join(*subs))
+
+                path_add.append(extension.get('prefix', '') + path + extension.get('extension', ''))
+
+        return list(set(paths + path_add))
 
     def expand_paths_with_sub_and_parent_folders(self, window, view, paths):
 
@@ -279,6 +283,8 @@ class OpenIncludeThread(threading.Thread):
             paths += '\n' + paths_decoded
         except:
             pass
+
+        paths += '\n' + paths.replace('.', '/')
 
         paths = paths.strip().split('\n')
 
