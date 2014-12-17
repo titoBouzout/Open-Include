@@ -303,7 +303,7 @@ class OpenIncludeThread(threading.Thread):
 
             # remove quotes
             # path = path.strip('"\'<>\(\)\{\}')  #
-            path = re.sub('"|\'|<|>|\(|\)|\{|\}', '', path)
+            path = re.sub('"|\'|<|>|\(|\)|\{|\}|;', '', path)
 
             # remove :row:col
             path = re.sub('(\:[0-9]*)+$', '', path).strip()
