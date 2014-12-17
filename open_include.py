@@ -14,7 +14,6 @@ except:
 BINARY = re.compile('\.(psd|ai|cdr|ico|cache|sublime-package|eot|svgz|ttf|woff|zip|tar|gz|rar|bz2|jar|xpi|mov|mpeg|avi|mpg|flv|wmv|mp3|wav|aif|aiff|snd|wma|asf|asx|pcm|pdf|doc|docx|xls|xlsx|ppt|pptx|rtf|sqlite|sqlitedb|fla|swf|exe)$', re.I)
 IMAGE = re.compile('\.(apng|png|jpg|gif|jpeg|bmp)$', re.I)
 
-# global settings container
 s = None
 
 debug = False
@@ -24,13 +23,14 @@ cache = {}
 def reset_cache():
     global cache
     if debug:
-        print('reset cache')
+        print('--reset cache--')
     cache = {}
     cache['os_listdir'] = {}
     cache['os_exists'] = {}
     cache['os_is_file'] = {}
     cache['os_is_dir'] = {}
     cache['done'] = {}
+    cache['checked'] = {}
     cache['look_into_folders'] = False
     cache['running'] = False
     cache['folder'] = False
@@ -38,7 +38,7 @@ def reset_cache():
 reset_cache()
 
 def normalize(path):
-    return path.lower().replace('\\', '/').replace('\\', '/')
+    return os.path.normpath(path.replace('\\', '/').replace('\\', '/'))
 
 def os_listdir(path):
     global cache
@@ -64,14 +64,14 @@ def os_is_file(path):
     global cache
     id = normalize(path)
     if id not in cache['os_is_file']:
-        cache['os_is_file'][id] = os_exists(path) and os.path.isfile(path)
+        cache['os_is_file'][id] = os.path.isfile(path)
     return cache['os_is_file'][id]
 
 def os_is_dir(path):
     global cache
     id = normalize(path)
     if id not in cache['os_is_dir']:
-        cache['os_is_dir'][id] = os_exists(path) and os.path.isdir(path)
+        cache['os_is_dir'][id] = os.path.isdir(path)
     return cache['os_is_dir'][id]
 
 def plugin_loaded():
@@ -97,7 +97,7 @@ class OpenIncludeThread(threading.Thread):
         global cache
         cache['running'] = True
         if debug:
-            print('running')
+            print('--running--')
         window = sublime.active_window()
         view = window.active_view()
         something_opened = False
@@ -115,12 +115,12 @@ class OpenIncludeThread(threading.Thread):
             # selected text
             if not opened:
                 if debug:
-                    print('selected')
+                    print('\n# selected')
                     print(view.substr(region))
                 opened = self.resolve_path(window, view, view.substr(region))
                 if not opened and cache['folder'] and view.substr(region) == cache['folder']:
+                    sublime.status_message("Opening Folder: " + normalize(cache['folder']))
                     window.run_command("open_dir", {"dir": cache['folder']})
-                    sublime.status_message("Opening folder: " + cache['folder'])
                     reset_cache()
                     return True
 
@@ -128,7 +128,7 @@ class OpenIncludeThread(threading.Thread):
             if not opened and view.score_selector(region.begin(), "parameter.url, string.quoted"):
                 file_to_open = view.substr(view.extract_scope(region.begin())).replace('"', '').replace("'", '')
                 if debug:
-                    print('quotes')
+                    print('\n# quotes')
                 opened = self.resolve_path(window, view, file_to_open)
 
                 if not opened and s.get('create_if_not_exists') and view.file_name():
@@ -148,14 +148,14 @@ class OpenIncludeThread(threading.Thread):
             if not opened:
                 expanded_lines = view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end()))
                 if debug:
-                    print('expanded lines')
+                    print('\n# expanded lines')
                 opened = self.resolve_path(window, view, expanded_lines)
 
             # current line quotes and parenthesis
             if not opened:
                 line = view.substr(view.line(region.begin()))
                 if debug:
-                    print('line')
+                    print('\n# line')
 
                 for line in re.split("[(){}'\"]", line):
                     line = line.strip()
@@ -173,7 +173,7 @@ class OpenIncludeThread(threading.Thread):
             if not opened:
                 file_to_open = view.substr(view.word(region)).strip()
                 if debug:
-                    print('word')
+                    print('\n# word')
                 opened = self.resolve_path(window, view, file_to_open)
 
             if opened:
@@ -185,16 +185,16 @@ class OpenIncludeThread(threading.Thread):
             if not cache['look_into_folders']:
                 cache['look_into_folders'] = True
                 if debug:
-                    print('running again')
+                    print('--running again--')
                 opened = self.run()
             else:
                 if debug:
-                    print('looking into the whole view')
+                    print('\n# looking into the whole view')
                 opened = self.resolve_path(window, view, view.substr(sublime.Region(0, 10485760 if view.size() > 10485760 else view.size())).replace('\t', '\n'), True)
             if not opened:
                 if cache['folder']:
+                    sublime.status_message("Opening Folder: " + normalize(cache['folder']))
                     window.run_command("open_dir", {"dir": cache['folder']})
-                    sublime.status_message("Opening folder: " + cache['folder'])
                     reset_cache()
                     return True
                 else:
@@ -271,6 +271,7 @@ class OpenIncludeThread(threading.Thread):
     def resolve_path(self, window, view, paths, skip_folders = False):
         global cache
         if debug:
+            print('--paths--')
             print(paths)
         try:
             paths_decoded = urllib.unquote(paths.encode('utf8'))
@@ -297,9 +298,12 @@ class OpenIncludeThread(threading.Thread):
 
         for path in paths:
             path = path.strip()
-            if path == '' or path in cache['done']:
+            path_normalized = normalize(path)
+            if debug:
+                print(path_normalized)
+            if path == '' or path_normalized in cache['done']:
                 continue
-            cache['done'][path] = True
+            cache['done'][path_normalized] = True
 
             # remove quotes
             # path = path.strip('"\'<>\(\)\{\}')  #
@@ -349,6 +353,12 @@ class OpenIncludeThread(threading.Thread):
     # try opening the resouce
     def try_open(self, window, maybe_path):
         global cache
+
+        path_normalized = normalize(maybe_path)
+        if path_normalized in cache['checked']:
+            return False
+        cache['checked'][path_normalized] = True
+
         # TODO: Add this somewhere WAY earlier since we are doing so much data
         # processing regarding paths prior to this
         if re.match(r'https?://', maybe_path):
@@ -364,6 +374,7 @@ class OpenIncludeThread(threading.Thread):
                 threading.Thread(target=self.read_url, args=(maybe_path,)).start()
 
         elif os_is_file(maybe_path):
+            sublime.status_message("Opening File " + normalize(maybe_path))
             if IMAGE.search(maybe_path):
                 self.open(window, maybe_path)
             elif BINARY.search(maybe_path):
@@ -375,9 +386,8 @@ class OpenIncludeThread(threading.Thread):
             else:
                 # Open within ST
                 self.open(window, maybe_path)
-            sublime.status_message("Opening file " + maybe_path)
 
-        elif os.path.isdir(maybe_path) and not cache['folder']:
+        elif ( os_is_dir(maybe_path) or os_is_dir('\\' + maybe_path) ) and not cache['folder']:
             # Walkaround for UNC path
             if maybe_path[0] == '\\':
                 maybe_path = '\\' + maybe_path
