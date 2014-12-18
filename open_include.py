@@ -64,14 +64,14 @@ def os_is_file(path):
     global cache
     id = normalize(path)
     if id not in cache['os_is_file']:
-        cache['os_is_file'][id] = os.path.isfile(path)
+        cache['os_is_file'][id] = os_exists(path) and os.path.isfile(path)
     return cache['os_is_file'][id]
 
 def os_is_dir(path):
     global cache
     id = normalize(path)
     if id not in cache['os_is_dir']:
-        cache['os_is_dir'][id] = os.path.isdir(path)
+        cache['os_is_dir'][id] = os_exists(path) and os.path.isdir(path)
     return cache['os_is_dir'][id]
 
 def plugin_loaded():
