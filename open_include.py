@@ -132,7 +132,7 @@ class OpenIncludeThread(threading.Thread):
                 opened = self.resolve_path(window, view, file_to_open)
 
                 if not opened and s.get('create_if_not_exists') and view.file_name():
-                    if re.match('https?://', file_to_open):
+                    if file_to_open.startswith('http'):
                     	pass
                     else:
 	                    file_to_open = self.resolve_relative(os.path.dirname(view.file_name()), file_to_open)
@@ -219,6 +219,8 @@ class OpenIncludeThread(threading.Thread):
         path_add = []
 
         for path in paths:
+            if path.startswith('http'):
+                continue
             extension_original = os.path.splitext(path)[1]
             for extension in extensions:
                 if not extension_original:
@@ -284,11 +286,13 @@ class OpenIncludeThread(threading.Thread):
         except:
             pass
 
-        paths += '\n' + paths.replace('.', '/')
+        for path in paths.split():
+            if not path.startswith('http'):
+                paths += '\n' + path.replace('.', '/')
 
         paths = paths.strip().split('\n')
 
-        if re.match(r'https?://', paths[0]):
+        if paths[0].startswith('http'):
             return self.try_open(window, paths[0])
 
         if s.get('use_strict'):
@@ -367,7 +371,7 @@ class OpenIncludeThread(threading.Thread):
 
         # TODO: Add this somewhere WAY earlier since we are doing so much data
         # processing regarding paths prior to this
-        if re.match(r'https?://', maybe_path):
+        if maybe_path.startswith('http'):
             # HTTP URL
             if BINARY.search(maybe_path) or s.get("open_http_in_browser", False):
                 sublime.status_message("Opening in browser " + maybe_path)
@@ -393,9 +397,9 @@ class OpenIncludeThread(threading.Thread):
                 # Open within ST
                 self.open(window, maybe_path)
 
-        elif ( os_is_dir(maybe_path) or os_is_dir('\\' + maybe_path) ) and not cache['folder']:
+        elif maybe_path and ( os_is_dir(maybe_path) or os_is_dir('\\' + maybe_path) ) and not cache['folder']:
             # Walkaround for UNC path
-            if maybe_path[0] == '\\':
+            if maybe_path and maybe_path[0] == '\\':
                 maybe_path = '\\' + maybe_path
             cache['folder'] = maybe_path
             return False
