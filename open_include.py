@@ -40,6 +40,11 @@ reset_cache()
 def normalize(path):
     return os.path.normpath(path.replace('\\', '/').replace('\\', '/'))
 
+def unique(seq):
+    seen = set()
+    seen_add = seen.add
+    return [ x for x in seq if not (x in seen or seen_add(x))]
+
 def os_listdir(path):
     global cache
     id = normalize(path)
@@ -126,7 +131,7 @@ class OpenIncludeThread(threading.Thread):
 
             # quoted
             if not opened and view.score_selector(region.begin(), "parameter.url, string.quoted"):
-                file_to_open = view.substr(view.extract_scope(region.begin())).replace('"', '').replace("'", '')
+                file_to_open = view.substr(view.extract_scope(region.begin()))
                 if debug:
                     print('\n# quotes')
                 opened = self.resolve_path(window, view, file_to_open)
@@ -156,7 +161,6 @@ class OpenIncludeThread(threading.Thread):
                 line = view.substr(view.line(region.begin()))
                 if debug:
                     print('\n# line')
-
                 for line in re.split("[(){}'\"]", line):
                     line = line.strip()
                     if line:
@@ -231,7 +235,7 @@ class OpenIncludeThread(threading.Thread):
 
                 path_add.append(extension.get('prefix', '') + path + extension.get('extension', ''))
 
-        return list(set(paths + path_add))
+        return unique(paths + path_add)
 
     def expand_paths_with_sub_and_parent_folders(self, window, view, paths):
 
@@ -271,13 +275,13 @@ class OpenIncludeThread(threading.Thread):
                 for path in paths:
                     paths2.append(os.path.join(dir, path))
 
-        return list(set(paths2))
+        return unique(paths2)
 
     # resolve the path of these sources and send to try_open
     def resolve_path(self, window, view, paths, skip_folders = False):
         global cache
         if debug:
-            print('--paths--')
+            print('--original paths--')
             print(paths)
         try:
             paths_decoded = urllib.unquote(paths.encode('utf8'))
@@ -289,6 +293,10 @@ class OpenIncludeThread(threading.Thread):
         for path in paths.split():
             if not path.startswith('http'):
                 paths += '\n' + path.replace('.', '/')
+                # remove quotes
+                paths += '\n' + re.sub('"|\'|<|>|\(|\)|\{|\}|;', '', path)
+                # remove :row:col
+                paths += '\n' + re.sub('(\:[0-9]*)+$', '', path).strip()
 
         paths = paths.strip().split('\n')
 
@@ -304,23 +312,18 @@ class OpenIncludeThread(threading.Thread):
 
         something_opened = False
 
-        paths = list(set(paths))
+        paths = unique(paths)
+
+        if debug:
+            print('--resolved paths--')
+            print(paths)
 
         for path in paths:
             path = path.strip()
             path_normalized = normalize(path)
-            if debug:
-                print(path_normalized)
             if path == '' or path_normalized in cache['done']:
                 continue
             cache['done'][path_normalized] = True
-
-            # remove quotes
-            # path = path.strip('"\'<>\(\)\{\}')  #
-            path = re.sub('"|\'|<|>|\(|\)|\{|\}|;', '', path)
-
-            # remove :row:col
-            path = re.sub('(\:[0-9]*)+$', '', path).strip()
 
             folder_structure = ["../" * i for i in range(s.get('maximum_folder_up', 5))]
 
