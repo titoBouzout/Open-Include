@@ -37,6 +37,9 @@ def reset_cache():
 
 reset_cache()
 
+def Window():
+    return sublime.active_window()
+
 def normalize(path):
     return os.path.normpath(path.replace('\\', '/').replace('\\', '/'))
 
@@ -123,18 +126,18 @@ class OpenIncludeThread(threading.Thread):
                     print('\n# selected')
                     print(view.substr(region))
                 opened = self.resolve_path(window, view, view.substr(region))
-                if not opened and cache['folder'] and view.substr(region) == cache['folder']:
-                    sublime.status_message("Opening Folder: " + normalize(cache['folder']))
-                    window.run_command("open_dir", {"dir": cache['folder']})
-                    reset_cache()
-                    return True
+                if not opened:
+                    opened = self.try_open_folder(view.substr(region))
 
-            # quoted
-            if not opened and view.score_selector(region.begin(), "parameter.url, string.quoted"):
+            # quoted/scope
+            if not opened:
                 file_to_open = view.substr(view.extract_scope(region.begin()))
                 if debug:
                     print('\n# quotes')
                 opened = self.resolve_path(window, view, file_to_open)
+
+                if not opened:
+                    opened = self.try_open_folder(file_to_open)
 
                 if not opened and s.get('create_if_not_exists') and view.file_name():
                     if file_to_open.startswith('http'):
@@ -155,6 +158,8 @@ class OpenIncludeThread(threading.Thread):
                 if debug:
                     print('\n# expanded lines')
                 opened = self.resolve_path(window, view, expanded_lines)
+                if not opened:
+                    opened = self.try_open_folder(expanded_lines)
 
             # current line quotes and parenthesis
             if not opened:
@@ -167,6 +172,8 @@ class OpenIncludeThread(threading.Thread):
                         opened = self.resolve_path(window, view, line)
                         if opened:
                             break
+                        if not opened:
+                            opened = self.try_open_folder(line)
 
             # split by spaces and tabs
             if not opened:
@@ -279,6 +286,9 @@ class OpenIncludeThread(threading.Thread):
 
     # resolve the path of these sources and send to try_open
     def resolve_path(self, window, view, paths, skip_folders = False):
+        if not paths.strip():
+            return False
+
         global cache
         if debug:
             print('--original paths--')
@@ -290,7 +300,8 @@ class OpenIncludeThread(threading.Thread):
         except:
             pass
 
-        for path in paths.split():
+        paths += '\n'
+        for path in paths.split('\n'):
             if not path.startswith('http'):
                 paths += '\n' + path.replace('.', '/')
                 # remove quotes
@@ -325,7 +336,7 @@ class OpenIncludeThread(threading.Thread):
                 continue
             cache['done'][path_normalized] = True
 
-            folder_structure = ["../" * i for i in range(s.get('maximum_folder_up', 5))]
+            folder_structure = [] + ["../" * i for i in range(s.get('maximum_folder_up', 5))]
 
             # relative to view & view dir name
             opened = False
@@ -411,6 +422,15 @@ class OpenIncludeThread(threading.Thread):
             return False
 
         return True
+
+    # try opening the folder
+    def try_open_folder(self, text):
+        if cache['folder'] and re.sub('["|\']', '', text).strip() == cache['folder']:
+            sublime.status_message("Opening Folder: " + normalize(cache['folder']))
+            Window().run_command("open_dir", {"dir": cache['folder']})
+            return True
+        else:
+            return False
 
     # util
     def resolve_relative(self, absolute, path):
