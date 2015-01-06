@@ -323,6 +323,11 @@ class OpenIncludeThread(threading.Thread):
 
         something_opened = False
 
+        folder_structure = [] + ["../" * i for i in range(s.get('maximum_folder_up', 5))]
+        if view.file_name():
+            view_dirname = os.path.dirname(view.file_name())
+            view_dirname_dirname = os.path.dirname(view_dirname)
+
         paths = unique(paths)
 
         if debug:
@@ -336,17 +341,13 @@ class OpenIncludeThread(threading.Thread):
                 continue
             cache['done'][path_normalized] = True
 
-            folder_structure = [] + ["../" * i for i in range(s.get('maximum_folder_up', 5))]
-
             # relative to view & view dir name
             opened = False
             if view.file_name():
                 for new_path_prefix in folder_structure:
-                    maybe_path = os.path.dirname(view.file_name())
-                    opened = self.create_path_relative_to_folder(window, view, maybe_path, new_path_prefix + path)
+                    opened = self.create_path_relative_to_folder(window, view, view_dirname, new_path_prefix + path)
                     if not opened:
-                        maybe_path = os.path.dirname(maybe_path)
-                        opened = self.create_path_relative_to_folder(window, view, maybe_path, new_path_prefix + path)
+                        opened = self.create_path_relative_to_folder(window, view, view_dirname_dirname, new_path_prefix + path)
 
                     if opened:
                         break
