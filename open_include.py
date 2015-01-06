@@ -34,6 +34,7 @@ def reset_cache():
     cache['look_into_folders'] = False
     cache['running'] = False
     cache['folder'] = False
+    cache['folder_save'] = True
 
 reset_cache()
 
@@ -236,7 +237,7 @@ class OpenIncludeThread(threading.Thread):
             for extension in extensions:
                 if not extension_original:
                     subs = path.replace('\\', '/').split('/')
-                    subs[-1] = re.sub('("|\')', '', subs[-1]);
+                    subs[-1] = re.sub('"|\'', '', subs[-1]);
                     subs[-1] = extension.get('prefix', '') + subs[-1] + extension.get('extension', '')
                     path_add.append(os.path.join(*subs))
 
@@ -303,11 +304,11 @@ class OpenIncludeThread(threading.Thread):
         paths += '\n'
         for path in paths.split('\n'):
             if not path.startswith('http'):
-                paths += '\n' + path.replace('.', '/')
                 # remove quotes
                 paths += '\n' + re.sub('"|\'|<|>|\(|\)|\{|\}|;', '', path)
                 # remove :row:col
                 paths += '\n' + re.sub('(\:[0-9]*)+$', '', path).strip()
+                paths += '\n' + path.replace('.', '/')
 
         paths = paths.strip().split('\n')
 
@@ -341,6 +342,7 @@ class OpenIncludeThread(threading.Thread):
                 continue
             cache['done'][path_normalized] = True
 
+            cache['folder_save'] = False
             # relative to view & view dir name
             opened = False
             if view.file_name():
@@ -348,7 +350,6 @@ class OpenIncludeThread(threading.Thread):
                     opened = self.create_path_relative_to_folder(window, view, view_dirname, new_path_prefix + path)
                     if not opened:
                         opened = self.create_path_relative_to_folder(window, view, view_dirname_dirname, new_path_prefix + path)
-
                     if opened:
                         break
 
@@ -361,6 +362,7 @@ class OpenIncludeThread(threading.Thread):
                             break
                     if opened:
                         break
+            cache['folder_save'] = True
 
             # absolute
             if not opened:
@@ -412,7 +414,7 @@ class OpenIncludeThread(threading.Thread):
                 # Open within ST
                 self.open(window, maybe_path)
 
-        elif maybe_path and ( os_is_dir(maybe_path) or os_is_dir('\\' + maybe_path) ) and not cache['folder']:
+        elif maybe_path and ( os_is_dir(maybe_path) or os_is_dir('\\' + maybe_path) ) and not cache['folder'] and cache['folder_save']:
             # Walkaround for UNC path
             if maybe_path and maybe_path[0] == '\\':
                 maybe_path = '\\' + maybe_path
@@ -426,7 +428,7 @@ class OpenIncludeThread(threading.Thread):
 
     # try opening the folder
     def try_open_folder(self, text):
-        if cache['folder'] and re.sub('["|\']', '', text).strip() == cache['folder']:
+        if cache['folder'] and re.sub('"|\'', '', text).strip() == cache['folder']:
             sublime.status_message("Opening Folder: " + normalize(cache['folder']))
             Window().run_command("open_dir", {"dir": cache['folder']})
             return True
