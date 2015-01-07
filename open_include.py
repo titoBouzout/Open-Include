@@ -2,6 +2,7 @@ import os.path
 import re
 import threading
 import urllib
+import time
 
 import sublime
 import sublime_plugin
@@ -90,7 +91,6 @@ def plugin_loaded():
 
 class OpenInclude(sublime_plugin.TextCommand):
     def run(self, edit = None):
-        global cache
         if not cache['running']:
             if ST2:
                 OpenIncludeThread().run()
@@ -113,13 +113,14 @@ class OpenIncludeThread(threading.Thread):
 
         for region in view.sel():
             opened = False
-
             if debug:
                 print('------------------------------------')
+            begin = time.time()
 
             # find in files panel
             if not opened and 'Find Results.hidden-tmLanguage' in view.settings().get('syntax'):
                 opened = OpenIncludeFindInFileGoto().run(view);
+
 
             # selected text
             if not opened:
@@ -131,7 +132,7 @@ class OpenIncludeThread(threading.Thread):
                     opened = self.try_open_folder(view.substr(region))
 
             # quoted/scope
-            if not opened:
+            if not opened and view.score_selector(region.begin(), "parameter.url, string.quoted"):
                 file_to_open = view.substr(view.extract_scope(region.begin()))
                 if debug:
                     print('\n# quotes')
@@ -178,7 +179,7 @@ class OpenIncludeThread(threading.Thread):
 
             # split by spaces and tabs
             if not opened:
-                words = re.sub("\s+", "\n", expanded_lines)  # expanded_lines.replace('\t', '\n').replace(' ', '\n'))
+                words = re.sub("\s+", "\n", expanded_lines)
                 opened = self.resolve_path(window, view, words)
 
             # word
@@ -287,10 +288,11 @@ class OpenIncludeThread(threading.Thread):
 
     # resolve the path of these sources and send to try_open
     def resolve_path(self, window, view, paths, skip_folders = False):
+        global cache
+
         if not paths.strip():
             return False
 
-        global cache
         if debug:
             print('--original paths--')
             print(paths)
