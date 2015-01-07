@@ -11,7 +11,7 @@
 	"create_if_not_exists": false,
 
 	// How many directories the plugin should go up.
-	"maximum_folder_up": 7,
+	"maximum_folder_up": 5,
 
 	// splits the view, and open the file in a secondary column
 	"in_secondary_colum": false,
@@ -19,11 +19,6 @@
 	// Additionally check for these combinations of extension and prefix when
 	// searching for a file
 	"auto_extension": [
-		// general
-		{
-			"extension": "",
-			"prefix": "../templates/"
-		},
 		// css
 		{
 			"extension": ".scss",
