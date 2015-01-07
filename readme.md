@@ -45,6 +45,7 @@ Please, To report an error provide the following information:
 2. Opened file path (ex: `c:/www/website/index.html`)
 3. Included file line code (ex: `a href="../html/views/home/Content/base/t16.shtml"` ....
 4. Exact location of included file, in `t16.shtml` (ex `c:/www/website/views/home/Content/base/t16.shtml`)
+5. The setting file of this package
 
 ## Contributors:
 
