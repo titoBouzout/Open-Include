@@ -1,20 +1,20 @@
 # Description
 
-This plugin will try to open Sublime Text file paths found on selections/cursor when pressing <kbd>ALT+D</kbd>.
-It has support for .coffee/.js/.hbs/.jade files when no extension specified. Usefull when doing require style JavaScript modules.
+This plugin will try to open Sublime Text file paths found on caret positions or partial selections when pressing <kbd>ALT+D</kbd>.
+It has support for custom prefixes and subfixes. Usefull when doing require style JavaScript modules when no extension specified.
 
-Strings starting with HTTP will open with default browser (if binary), if not, we will read the file with urllib and open the result in a new view. By setting the `"open_http_in_browser"` setting in your user preferences to `true`, we will always open the default browser.
+Strings starting with HTTP will open with default browser (if binary, ie ends with png), if not, we will read the file with urllib and open the result in a new view/tab. By setting the `"open_http_in_browser"` setting in your user preferences to `true`, we will always open the default browser.
 
-`use_strict` preference will control if the path should be complete and correct, if not the file will not open and the package will not attempt to find the file.
+`use_strict` preference will control if the path should be complete and correct, if not the file will not open and the package will not attempt to find the source file.
 
-## Sources:
+## In theory this package should work like this:
 
 -   If in "Find Results" panel, current file and line number position
 -   The exact selection(s)
 -   Text between quotes under caret positions.
 -   Selections expanded to full lines covered by caret positions or partial selections.
--   Current lines splitted by `(){}'"`
--   Current lines splitted by spaces or tabs
+-   Current lines split by `(){}'"`
+-   Current lines split by spaces or tabs
 -   Current word
 -   If nothing works, will check the Full text up to 10485760
 
