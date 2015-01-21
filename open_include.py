@@ -92,6 +92,7 @@ def plugin_loaded():
 class OpenInclude(sublime_plugin.TextCommand):
     def run(self, edit = None):
         if not cache['running']:
+            cache['running'] = True
             if ST2:
                 OpenIncludeThread().run()
             else:
@@ -104,7 +105,6 @@ class OpenIncludeThread(threading.Thread):
 
     def run(self):
         global cache
-        cache['running'] = True
         if debug:
             print('--running--')
         window = sublime.active_window()
@@ -388,8 +388,6 @@ class OpenIncludeThread(threading.Thread):
             return False
         cache['checked'][path_normalized] = True
 
-        # TODO: Add this somewhere WAY earlier since we are doing so much data
-        # processing regarding paths prior to this
         if maybe_path.startswith('http'):
             # HTTP URL
             if BINARY.search(maybe_path) or s.get("open_http_in_browser", False):
