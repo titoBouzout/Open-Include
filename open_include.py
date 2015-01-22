@@ -55,7 +55,7 @@ def os_listdir(path):
     id = normalize(path)
     if id not in cache['os_listdir']:
         try:
-            cache['os_listdir'][id] = [os.path.join(path, x) for x in os.listdir(path) if os_is_dir(os.path.join(path, x))]
+            cache['os_listdir'][id] = [os.path.join(path, x).replace('\\', '/') for x in os.listdir(path) if os_is_dir(os.path.join(path, x))]
         except:
             cache['os_listdir'][id] = []
     return cache['os_listdir'][id]
@@ -240,7 +240,7 @@ class OpenIncludeThread(threading.Thread):
                     subs = path.replace('\\', '/').split('/')
                     subs[-1] = re.sub('"|\'', '', subs[-1]);
                     subs[-1] = extension.get('prefix', '') + subs[-1] + extension.get('extension', '')
-                    path_add.append(os.path.join(*subs))
+                    path_add.append(os.path.join(*subs).replace('\\', '/'))
 
                 path_add.append(extension.get('prefix', '') + path + extension.get('extension', ''))
 
@@ -257,32 +257,32 @@ class OpenIncludeThread(threading.Thread):
                 if _view.file_name():
                     branch, leaf = os.path.split(_view.file_name())
                     for path in paths:
-                        paths2.append(os.path.join(branch, path))
+                        paths2.append(os.path.join(branch, path).replace('\\', '/'))
         else:
             # subfolders
             branch, leaf = os.path.split(view.file_name())
             for dir in os_listdir(branch):
                 for path in paths:
-                    paths2.append(os.path.join(dir, path))
+                    paths2.append(os.path.join(dir, path).replace('\\', '/'))
 
             # parent folders
             branch, leaf = os.path.split(branch)
             for dir in os_listdir(branch):
                 for path in paths:
-                    paths2.append(os.path.join(dir, path))
+                    paths2.append(os.path.join(dir, path).replace('\\', '/'))
 
             # folders of opened views
             for _view in window.views():
                 if _view.file_name():
                     branch, leaf = os.path.split(_view.file_name())
                     for path in paths:
-                        paths2.append(os.path.join(branch, path))
+                        paths2.append(os.path.join(branch, path).replace('\\', '/'))
 
         # subfolders of the project folders
         for branch in window.folders():
             for dir in os_listdir(branch):
                 for path in paths:
-                    paths2.append(os.path.join(dir, path))
+                    paths2.append(os.path.join(dir, path).replace('\\', '/'))
 
         return unique(paths2)
 
@@ -303,14 +303,18 @@ class OpenIncludeThread(threading.Thread):
         except:
             pass
 
-        paths += '\n'
+        paths = re.sub('"|\'|<|>|\(|\)|\{|\}', '', paths)
+
         for path in paths.split('\n'):
             if not path.startswith('http'):
                 # remove quotes
-                paths += '\n' + re.sub('"|\'|<|>|\(|\)|\{|\}|;', '', path)
+                paths += '\n' + re.sub(';', '', path)
                 # remove :row:col
                 paths += '\n' + re.sub('(\:[0-9]*)+$', '', path).strip()
-                paths += '\n' + path.replace('.', '/')
+                # replace . for /
+                paths += '\n' + path.replace('./', '.').replace('.', '/')
+                # replace :: for /
+                paths += '\n' + path.replace('::', '/')
 
         paths = paths.strip().split('\n')
 
@@ -441,7 +445,7 @@ class OpenIncludeThread(threading.Thread):
         for sub in subs:
             if sub != '':
                 absolute = os.path.join(absolute, sub)
-        return absolute
+        return absolute.replace('\\', '/')
 
     def read_url(self, url):
         try:
