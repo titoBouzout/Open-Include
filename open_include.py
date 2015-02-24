@@ -7,6 +7,8 @@ import time
 import sublime
 import sublime_plugin
 
+from os.path import expanduser
+
 try:
     from .Edit import Edit as Edit
 except:
@@ -315,6 +317,10 @@ class OpenIncludeThread(threading.Thread):
                 paths += '\n' + path.replace('./', '.').replace('.', '/')
                 # replace :: for /
                 paths += '\n' + path.replace('::', '/')
+                if s.get('expand_tilde'):
+                  # replace ~ for the user's home directory
+                  user_home_path = expanduser("~")
+                  paths += '\n' + path.replace('~', user_home_path)
 
         paths = paths.strip().split('\n')
 
