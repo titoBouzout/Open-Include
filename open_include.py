@@ -317,7 +317,7 @@ class OpenIncludeThread(threading.Thread):
                 paths += '\n' + path.replace('./', '.').replace('.', '/')
                 # replace :: for /
                 paths += '\n' + path.replace('::', '/')
-                if s.get('expand_tilde'):
+                if s.get('expand_tilde', True):
                   # replace ~ for the user's home directory
                   user_home_path = expanduser("~")
                   paths += '\n' + path.replace('~', user_home_path)
