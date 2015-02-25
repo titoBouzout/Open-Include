@@ -307,6 +307,8 @@ class OpenIncludeThread(threading.Thread):
 
         paths = re.sub('"|\'|<|>|\(|\)|\{|\}', '', paths)
 
+        user_home_path = expanduser("~")
+
         for path in paths.split('\n'):
             if not path.startswith('http'):
                 # remove quotes
@@ -317,9 +319,8 @@ class OpenIncludeThread(threading.Thread):
                 paths += '\n' + path.replace('./', '.').replace('.', '/')
                 # replace :: for /
                 paths += '\n' + path.replace('::', '/')
+                # replace ~ for the user's home directory
                 if s.get('expand_tilde', True):
-                  # replace ~ for the user's home directory
-                  user_home_path = expanduser("~")
                   paths += '\n' + path.replace('~', user_home_path)
 
         paths = paths.strip().split('\n')
