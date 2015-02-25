@@ -16,6 +16,10 @@
 	// splits the view, and open the file in a secondary column
 	"in_secondary_colum": false,
 
+	// Expand tilde characters in the path to the user's home directory, i.e.:
+	// ~/Project/file_name -> /home/user_id/Project/file_name
+	"expand_tilde": true,
+
 	// Additionally check for these combinations of extension and prefix when
 	// searching for a file
 	"auto_extension": [
