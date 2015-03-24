@@ -508,10 +508,10 @@ class OpenIncludeFindInFileGoto():
         file_name = self.get_file(view)
         if line_no is not None and file_name is not None:
             file_loc = "%s:%s" % (file_name, line_no)
-            view.window().open_file(file_loc, sublime.ENCODED_POSITION)
+            self.open(file_loc, sublime.ENCODED_POSITION)
             return True
         elif file_name is not None:
-            view.window().open_file(file_name)
+            self.open(file_name)
             return True
         return False
 
@@ -534,6 +534,12 @@ class OpenIncludeFindInFileGoto():
                         return match.group(1)
                 line = view.line(line.begin() - 1)
         return None
+
+    def open(self, path, position):
+        if s.get('in_secondary_colum', False):
+            sublime.active_window().run_command('set_layout', {"cols": [0.0, 0.5, 1.0], "rows": [0.0, 1.0], "cells": [[0, 0, 1, 1], [1, 0, 2, 1]]})
+            sublime.active_window().focus_group(1)
+        sublime.active_window().open_file(path, position)
 
 if int(sublime.version()) < 3000:
     plugin_loaded()
