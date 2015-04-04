@@ -147,7 +147,7 @@ class OpenIncludeThread(threading.Thread):
                     if file_to_open.startswith('http'):
                     	pass
                     else:
-	                    file_to_open = self.resolve_relative(os.path.dirname(view.file_name()), re.sub('"|\'|<|>|\(|\)|\{|\}|;', '', file_to_open))
+	                    file_to_open = self.resolve_relative(os.path.dirname(view.file_name()), re.sub('"|\'|<|>|\(|\)|\{|\}|\[|\]|;', '', file_to_open))
 	                    branch, leaf = os.path.split(file_to_open)
 	                    try:
 	                        os.makedirs(branch)
@@ -170,7 +170,7 @@ class OpenIncludeThread(threading.Thread):
                 line = view.substr(view.line(region.begin()))
                 if debug:
                     print('\n# line')
-                for line in re.split("[(){}'\"]", line):
+                for line in re.split("[(){}\[\]'\"]", line):
                     line = line.strip()
                     if line:
                         opened = self.resolve_path(window, view, line)
