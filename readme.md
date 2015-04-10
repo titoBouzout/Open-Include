@@ -13,7 +13,7 @@ Strings starting with HTTP will open with default browser (if binary, ie ends wi
 -   The exact selection(s)
 -   Text between quotes under caret positions.
 -   Selections expanded to full lines covered by caret positions or partial selections.
--   Current lines split by `(){}'"`
+-   Current lines split by `(){}[]'"`
 -   Current lines split by spaces or tabs
 -   Current word
 -   If nothing works, will check the Full text up to 10485760
