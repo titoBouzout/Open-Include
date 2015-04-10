@@ -60,6 +60,7 @@ Please, To report an error provide the following information:
 -   [iamntz][]
 -   [Starli0n][]
 -   [jbrooksuk][]
+-   [xHN35RQ][]
 
   [titoBouzout]: https://github.com/titoBouzout
   [vip32]: https://github.com/vip32
@@ -72,3 +73,4 @@ Please, To report an error provide the following information:
   [iamntz]: https://github.com/iamntz
   [Starli0n]: https://github.com/Starli0n
   [jbrooksuk]: https://github.com/jbrooksuk
+  [xHN35RQ]: https://github.com/xHN35RQ
