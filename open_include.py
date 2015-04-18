@@ -298,12 +298,17 @@ class OpenIncludeThread(threading.Thread):
         if debug:
             print('--original paths--')
             print(paths)
+
         try:
             paths_decoded = urllib.unquote(paths.encode('utf8'))
             paths_decoded = unicode(paths_decoded.decode('utf8'))
             paths += '\n' + paths_decoded
         except:
-            pass
+            try:
+                paths_decoded = urllib.parse.unquote(paths)
+                paths += '\n' + paths_decoded
+            except:
+                pass
 
         paths = re.sub('"|\'|<|>|\(|\)|\{|\}', '', paths)
 
