@@ -13,7 +13,7 @@ Strings starting with HTTP will open with default browser (if binary, ie ends wi
 -   The exact selection(s)
 -   Text between quotes under caret positions.
 -   Selections expanded to full lines covered by caret positions or partial selections.
--   Current lines split by `(){}'"`
+-   Current lines split by `(){}[]'"`
 -   Current lines split by spaces or tabs
 -   Current word
 -   If nothing works, will check the Full text up to 10485760
@@ -60,6 +60,7 @@ Please, To report an error provide the following information:
 -   [iamntz][]
 -   [Starli0n][]
 -   [jbrooksuk][]
+-   [xHN35RQ][]
 
   [titoBouzout]: https://github.com/titoBouzout
   [vip32]: https://github.com/vip32
@@ -72,3 +73,4 @@ Please, To report an error provide the following information:
   [iamntz]: https://github.com/iamntz
   [Starli0n]: https://github.com/Starli0n
   [jbrooksuk]: https://github.com/jbrooksuk
+  [xHN35RQ]: https://github.com/xHN35RQ
