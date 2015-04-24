@@ -47,6 +47,12 @@ Please, To report an error provide the following information:
 4. Exact location of included file, in `t16.shtml` (ex `c:/www/website/views/home/Content/base/t16.shtml`)
 5. The setting file of this package
 
+## notes
+
+### create_if_not_exists
+
+ 1. create if not exists work only in scope "parameter.url, string.quoted"
+
 ## Contributors:
 
 -   [titoBouzout][]

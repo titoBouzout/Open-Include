@@ -310,12 +310,13 @@ class OpenIncludeThread(threading.Thread):
             except:
                 pass
 
-        paths = re.sub('"|\'|<|>|\(|\)|\{|\}', '', paths)
-
         user_home_path = expanduser("~")
 
         for path in paths.split('\n'):
             if not path.startswith('http'):
+
+                paths += re.sub('"|\'|<|>|\(|\)|\{|\}|\[|\]|;', '', path)
+
                 # remove quotes
                 paths += '\n' + re.sub(';', '', path)
                 # remove :row:col
