@@ -541,7 +541,7 @@ class OpenIncludeFindInFileGoto():
                 line = view.line(line.begin() - 1)
         return None
 
-    def open(self, path, position):
+    def open(self, path, position = False):
         if s.get('in_secondary_colum', False):
             sublime.active_window().run_command('set_layout', {"cols": [0.0, 0.5, 1.0], "rows": [0.0, 1.0], "cells": [[0, 0, 1, 1], [1, 0, 2, 1]]})
             sublime.active_window().focus_group(1)
