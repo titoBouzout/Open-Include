@@ -202,10 +202,6 @@ class OpenIncludeThread(threading.Thread):
                 if debug:
                     print('--running again--')
                 opened = self.run()
-            else:
-                if debug:
-                    print('\n# looking into the whole view')
-                opened = self.resolve_path(window, view, view.substr(sublime.Region(0, 10485760 if view.size() > 10485760 else view.size())).replace('\t', '\n'), True)
             if not opened:
                 if cache['folder']:
                     sublime.status_message("Opening Folder: " + normalize(cache['folder']))
