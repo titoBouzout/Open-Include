@@ -53,6 +53,10 @@ Please, To report an error provide the following information:
 
  1. create if not exists work only in scope "parameter.url, string.quoted"
 
+## Installation
+
+Download or clone the contents of this repository to a folder named exactly as the package name into the Packages/ folder of ST.
+
 ## Contributors:
 
 -   [titoBouzout][]
