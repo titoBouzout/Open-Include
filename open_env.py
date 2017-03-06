@@ -28,10 +28,6 @@ class Prefs:
         verbose(log="############################################################")
 
 
-if int(sublime.version()) < 3000:
-    Prefs.load()
-
-
 ### OpenFileFromEnv ###
 
 # Find root directory
@@ -122,6 +118,7 @@ class OpenFileFromEnvCommand(sublime_plugin.TextCommand):
 
     # Return True if the file is part of an environment
     def is_enabled(self):
+        Prefs.load()
         Prefs.show()
         verbose(log="is_enabled()")
 
