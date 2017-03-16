@@ -16,8 +16,15 @@ class Prefs:
     @staticmethod
     def load():
         settings = sublime.load_settings(PluginName + '.sublime-settings')
-        Prefs.environment = settings.get('environment', [])
-        Prefs.expand_alias = settings.get('expand_alias', True)
+        os_specific_settings = {}
+        if os.name == 'nt':
+            os_specific_settings = sublime.load_settings(PluginName + ' (Windows).sublime-settings')
+        elif sys.platform == 'darwin':
+            os_specific_settings = sublime.load_settings(PluginName + ' (OSX).sublime-settings')
+        else:
+            os_specific_settings = sublime.load_settings(PluginName + ' (Linux).sublime-settings')
+        Prefs.environment = os_specific_settings.get('environment', settings.get('environment', []))
+        Prefs.expand_alias = os_specific_settings.get('expand_alias', settings.get('expand_alias', True))
 
     @staticmethod
     def show():
@@ -61,7 +68,7 @@ class OpenFileFromEnvCommand(sublime_plugin.TextCommand):
                     # Loop in path alias of the current environment
                     available_file_names = []
                     for root in root_alias:
-                        env_file_name = os.path.join(root, self.base_name)
+                        env_file_name = os.path.join(os.path.expandvars(root), self.base_name)
                         state = ' '
                         if os.path.exists(env_file_name):
                             state = 'X'
@@ -105,6 +112,7 @@ class OpenFileFromEnvCommand(sublime_plugin.TextCommand):
     def is_filename_part_of_env(self, file_name, root_alias):
         for root in root_alias:
             # Remove trailing os.sep
+            root = os.path.expandvars(root)
             root = os.path.normpath(root).lower()
             if file_name.startswith(root):
                 base_name = file_name.replace(root.lower(), "")
