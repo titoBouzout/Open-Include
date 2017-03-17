@@ -20,6 +20,10 @@
 	// ~/Project/file_name -> /home/user_id/Project/file_name
 	"expand_tilde": true,
 
+	// Expand environment variables characters in the path, i.e.:
+	// $HOME/Project/file_name -> /home/user_id/Project/file_name
+	"expand_env_var": true,
+
 	// Additionally check for these combinations of extension and prefix when
 	// searching for a file
 	"auto_extension": [
@@ -35,6 +39,7 @@
 		}
 	],
 
+	// Support environment variable expansion
 	"environment": [],
 
 	// Option used by the panel control to change the files to open strategy

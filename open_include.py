@@ -17,7 +17,8 @@ except:
 BINARY = re.compile('\.(psd|ai|cdr|ico|cache|sublime-package|eot|svgz|ttf|woff|zip|tar|gz|rar|bz2|jar|xpi|mov|mpeg|avi|mpg|flv|wmv|mp3|wav|aif|aiff|snd|wma|asf|asx|pcm|pdf|doc|docx|xls|xlsx|ppt|pptx|rtf|sqlite|sqlitedb|fla|swf|exe)$', re.I)
 IMAGE = re.compile('\.(apng|png|jpg|gif|jpeg|bmp)$', re.I)
 
-s = None
+settings = None
+os_specific_settings = None
 
 debug = False
 ST2 = int(sublime.version()) < 3000
@@ -87,8 +88,19 @@ def os_is_dir(path):
     return cache['os_is_dir'][id]
 
 def plugin_loaded():
-    global s
-    s = sublime.load_settings('Open-Include.sublime-settings')
+    global settings
+    global os_specific_settings
+    settings = sublime.load_settings('Open-Include.sublime-settings')
+    os_specific_settings = {}
+    if sublime.platform() == 'windows':
+        os_specific_settings = sublime.load_settings('Open-Include (Windows).sublime-settings')
+    elif sublime.platform() == 'osx':
+        os_specific_settings = sublime.load_settings('Open-Include (OSX).sublime-settings')
+    else:
+        os_specific_settings = sublime.load_settings('Open-Include (Linux).sublime-settings')
+
+def get_setting(key, default=None):
+    return os_specific_settings.get(key, settings.get(key, default))
 
 
 class OpenInclude(sublime_plugin.TextCommand):
@@ -143,7 +155,7 @@ class OpenIncludeThread(threading.Thread):
                 if not opened:
                     opened = self.try_open_folder(file_to_open)
 
-                if not opened and s.get('create_if_not_exists') and view.file_name():
+                if not opened and get_setting('create_if_not_exists') and view.file_name():
                     if file_to_open.startswith('http'):
                     	pass
                     else:
@@ -222,7 +234,7 @@ class OpenIncludeThread(threading.Thread):
     def expand_paths_with_extensions(self, window, view, paths):
 
         # Special file naming conventions, e.g. '_'+name+'.scss' + current extension
-        extensions = s.get('auto_extension', [])
+        extensions = get_setting('auto_extension', [])
         if view.file_name():
             file_ext = os.path.splitext(view.file_name())[1]
             extensions.append(dict(extension=file_ext))
@@ -322,15 +334,17 @@ class OpenIncludeThread(threading.Thread):
                 # replace :: for /
                 paths += '\n' + path.replace('::', '/')
                 # replace ~ for the user's home directory
-                if s.get('expand_tilde', True):
-                  paths += '\n' + path.replace('~', user_home_path)
+                if get_setting('expand_tilde', True):
+                    paths += '\n' + path.replace('~', user_home_path)
+                if get_setting('expand_env_var', True):
+                    paths += '\n' + os.path.expandvars(path)
 
         paths = paths.strip().split('\n')
 
         if paths[0].startswith('http'):
             return self.try_open(window, paths[0])
 
-        if s.get('use_strict'):
+        if get_setting('use_strict'):
             return self.try_open(window, self.resolve_relative(os.path.dirname(view.file_name()), paths[0]))
 
         paths = self.expand_paths_with_extensions(window, view, paths)
@@ -339,7 +353,7 @@ class OpenIncludeThread(threading.Thread):
 
         something_opened = False
 
-        folder_structure = [] + ["../" * i for i in range(s.get('maximum_folder_up', 5))]
+        folder_structure = [] + ["../" * i for i in range(get_setting('maximum_folder_up', 5))]
         if view.file_name():
             view_dirname = os.path.dirname(view.file_name())
             view_dirname_dirname = os.path.dirname(view_dirname)
@@ -499,7 +513,7 @@ class OpenIncludeThread(threading.Thread):
                 view.settings().set('syntax', 'Packages/XML/XML.tmLanguage')
 
     def open(self, window, path):
-        if s.get('in_secondary_colum', False):
+        if get_setting('in_secondary_colum', False):
             window.run_command('set_layout', {"cols": [0.0, 0.5, 1.0], "rows": [0.0, 1.0], "cells": [[0, 0, 1, 1], [1, 0, 2, 1]]})
             window.focus_group(1)
         window.open_file(path)
@@ -538,7 +552,7 @@ class OpenIncludeFindInFileGoto():
         return None
 
     def open(self, path, position = False):
-        if s.get('in_secondary_colum', False):
+        if get_setting('in_secondary_colum', False):
             sublime.active_window().run_command('set_layout', {"cols": [0.0, 0.5, 1.0], "rows": [0.0, 1.0], "cells": [[0, 0, 1, 1], [1, 0, 2, 1]]})
             sublime.active_window().focus_group(1)
         sublime.active_window().open_file(path, position)

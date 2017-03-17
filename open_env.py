@@ -15,11 +15,12 @@ def verbose(**kwargs):
 class Prefs:
     @staticmethod
     def load():
+        print('Load settings: ' + PluginName)
         settings = sublime.load_settings(PluginName + '.sublime-settings')
         os_specific_settings = {}
-        if os.name == 'nt':
+        if sublime.platform() == 'windows':
             os_specific_settings = sublime.load_settings(PluginName + ' (Windows).sublime-settings')
-        elif sys.platform == 'darwin':
+        elif sublime.platform() == 'osx':
             os_specific_settings = sublime.load_settings(PluginName + ' (OSX).sublime-settings')
         else:
             os_specific_settings = sublime.load_settings(PluginName + ' (Linux).sublime-settings')
@@ -33,6 +34,10 @@ class Prefs:
             for key, values in env.items():
                 verbose(log=key + ": " + ';'.join(values))
         verbose(log="############################################################")
+
+
+def plugin_loaded():
+    Prefs.load()
 
 
 ### OpenFileFromEnv ###
@@ -126,7 +131,6 @@ class OpenFileFromEnvCommand(sublime_plugin.TextCommand):
 
     # Return True if the file is part of an environment
     def is_enabled(self):
-        Prefs.load()
         Prefs.show()
         verbose(log="is_enabled()")
 
@@ -147,3 +151,6 @@ class OpenFileFromEnvCommand(sublime_plugin.TextCommand):
 
         sublime.status_message("The current file is not part of an environment")
         return False
+
+if int(sublime.version()) < 3000:
+    plugin_loaded()

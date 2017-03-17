@@ -37,6 +37,11 @@ If everything else fails will also look into:
 -   Relative to all sub-folders
 -   Relative to all parent folders
 
+It supports:
+
+-   A generic setting `Open-Include.sublime-settings` which could be overloaded for each parameter in a platform specific configuration `Open-Include ($platform).sublime-settings`
+-   Environment variable expansions both for paths in the settings and under the caret
+
 ## Reporting an error somewhere
 
 Please, To report an error provide the following information:
