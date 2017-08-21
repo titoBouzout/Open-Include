@@ -419,6 +419,13 @@ class OpenIncludeThread(threading.Thread):
 
         debug_info('Trying to open: ' + maybe_path)
 
+        row_regex = re.compile(r':(\d+)$')
+        row_search_result = row_regex.search(maybe_path)
+        row = None
+        if row_search_result is not None:
+            maybe_path = row_regex.sub('', maybe_path)
+            row = int(row_search_result.group(1))
+
         path_normalized = normalize(maybe_path)
         if path_normalized in cache['checked']:
             return False
@@ -448,7 +455,7 @@ class OpenIncludeThread(threading.Thread):
                 desktop.open(maybe_path)
             else:
                 # Open within ST
-                self.open(window, maybe_path)
+                self.open(window, maybe_path, row = row)
 
         elif maybe_path and ( os_is_dir(maybe_path) or os_is_dir('\\' + maybe_path) ) and not cache['folder'] and cache['folder_save']:
             # Walkaround for UNC path
@@ -521,11 +528,17 @@ class OpenIncludeThread(threading.Thread):
             elif content_type == 'text/xml' or content_type == 'application/xml':
                 view.settings().set('syntax', 'Packages/XML/XML.tmLanguage')
 
-    def open(self, window, path):
+    def open(self, window, path, row = None):
         if get_setting('in_secondary_colum', False):
             window.run_command('set_layout', {"cols": [0.0, 0.5, 1.0], "rows": [0.0, 1.0], "cells": [[0, 0, 1, 1], [1, 0, 2, 1]]})
             window.focus_group(1)
         window.open_file(path)
+
+        if row is not None:
+            view = window.active_view()
+            view.sel().clear()
+            view.sel().add(sublime.Region(view.text_point(row - 1, 0)))
+            view.show(view.text_point(row - 1, 0))
 
 class OpenIncludeFindInFileGoto():
     def run(self, view):
