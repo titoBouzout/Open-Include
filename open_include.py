@@ -320,11 +320,10 @@ class OpenIncludeThread(threading.Thread):
 
         user_home_path = expanduser("~")
 
+        paths = re.sub('"|\'|<|>|\(|\)|\{|\}|\[|\]|;', '', paths)
+
         for path in paths.split('\n'):
             if not path.startswith('http'):
-
-                paths += re.sub('"|\'|<|>|\(|\)|\{|\}|\[|\]|;', '', path)
-
                 # remove quotes
                 paths += '\n' + re.sub(';', '', path)
                 # remove :row:col
@@ -338,6 +337,7 @@ class OpenIncludeThread(threading.Thread):
                     paths += '\n' + path.replace('~', user_home_path)
                 if get_setting('expand_env_var', True):
                     paths += '\n' + os.path.expandvars(path)
+
 
         paths = paths.strip().split('\n')
 
