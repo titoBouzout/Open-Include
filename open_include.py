@@ -24,10 +24,14 @@ debug = False
 ST2 = int(sublime.version()) < 3000
 cache = {}
 
+def debug_info(msg):
+    if debug:
+        print( msg )
+
 def reset_cache():
     global cache
-    if debug:
-        print('--reset cache--')
+    debug_info('-- reset cache --')
+
     cache = {}
     cache['os_listdir'] = {}
     cache['os_exists'] = {}
@@ -119,16 +123,14 @@ class OpenIncludeThread(threading.Thread):
 
     def run(self):
         global cache
-        if debug:
-            print('--running--')
+        debug_info('-- running --')
         window = sublime.active_window()
         view = window.active_view()
         something_opened = False
 
         for region in view.sel():
             opened = False
-            if debug:
-                print('------------------------------------')
+            debug_info('------------------------------------')
             begin = time.time()
 
             # find in files panel
@@ -138,9 +140,8 @@ class OpenIncludeThread(threading.Thread):
 
             # selected text
             if not opened:
-                if debug:
-                    print('\n# selected')
-                    print(view.substr(region))
+                debug_info('\n# selected')
+                debug_info(view.substr(region))
                 opened = self.resolve_path(window, view, view.substr(region))
                 if not opened:
                     opened = self.try_open_folder(view.substr(region))
@@ -148,8 +149,8 @@ class OpenIncludeThread(threading.Thread):
             # quoted/scope
             if not opened and view.score_selector(region.begin(), "parameter.url, string.quoted"):
                 file_to_open = view.substr(view.extract_scope(region.begin()))
-                if debug:
-                    print('\n# quotes')
+
+                debug_info('\n# quotes')
                 opened = self.resolve_path(window, view, file_to_open)
 
                 if not opened:
@@ -171,8 +172,8 @@ class OpenIncludeThread(threading.Thread):
             # selection expanded to full lines
             if not opened:
                 expanded_lines = view.substr(sublime.Region(view.line(region.begin()).begin(), view.line(region.end()).end()))
-                if debug:
-                    print('\n# expanded lines')
+
+                debug_info('\n# expanded lines')
                 opened = self.resolve_path(window, view, expanded_lines)
                 if not opened:
                     opened = self.try_open_folder(expanded_lines)
@@ -180,8 +181,8 @@ class OpenIncludeThread(threading.Thread):
             # current line quotes and parenthesis
             if not opened:
                 line = view.substr(view.line(region.begin()))
-                if debug:
-                    print('\n# line')
+
+                debug_info('\n# line')
                 for line in re.split("[(){}\[\]'\"]", line):
                     line = line.strip()
                     if line:
@@ -199,8 +200,8 @@ class OpenIncludeThread(threading.Thread):
             # word
             if not opened:
                 file_to_open = view.substr(view.word(region)).strip()
-                if debug:
-                    print('\n# word')
+
+                debug_info('\n# word')
                 opened = self.resolve_path(window, view, file_to_open)
 
             if opened:
@@ -211,8 +212,8 @@ class OpenIncludeThread(threading.Thread):
             # run again, and look into every subfolder and it its parent folders
             if not cache['look_into_folders']:
                 cache['look_into_folders'] = True
-                if debug:
-                    print('--running again--')
+
+                debug_info('-- running again --')
                 opened = self.run()
             if not opened:
                 if cache['folder']:
@@ -303,9 +304,9 @@ class OpenIncludeThread(threading.Thread):
         if not paths.strip():
             return False
 
-        if debug:
-            print('--original paths--')
-            print(paths)
+        debug_info('-- original paths --')
+        debug_info(paths)
+        debug_info('-- /original paths --')
 
         try:
             paths_decoded = urllib.unquote(paths.encode('utf8'))
@@ -360,9 +361,13 @@ class OpenIncludeThread(threading.Thread):
 
         paths = unique(paths)
 
-        if debug:
-            print('--resolved paths--')
-            print(paths)
+        debug_info('-- resolved paths --')
+        debug_info(paths)
+        debug_info('-- /resolved paths --')
+
+        if len(paths) > 2:
+            print("-- There are too many paths, probably we shoulnd't open! Path count: %d" % len(paths))
+            return False
 
         for path in paths:
             path = path.strip()
@@ -374,6 +379,7 @@ class OpenIncludeThread(threading.Thread):
             cache['folder_save'] = False
             # relative to view & view dir name
             opened = False
+
             if view.file_name():
                 for new_path_prefix in folder_structure:
                     opened = self.create_path_relative_to_folder(window, view, view_dirname, new_path_prefix + path)
@@ -399,6 +405,7 @@ class OpenIncludeThread(threading.Thread):
 
             if opened:
                 something_opened = True
+                break
 
         return something_opened
 
@@ -409,6 +416,8 @@ class OpenIncludeThread(threading.Thread):
     # try opening the resouce
     def try_open(self, window, maybe_path):
         global cache
+
+        debug_info('Trying to open: ' + maybe_path)
 
         path_normalized = normalize(maybe_path)
         if path_normalized in cache['checked']:
