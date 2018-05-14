@@ -365,7 +365,7 @@ class OpenIncludeThread(threading.Thread):
         debug_info(paths)
         debug_info('-- /resolved paths --')
 
-        if len(paths) > 2:
+        if len(paths) > 10:
             print("-- There are too many paths, probably we shoulnd't open! Path count: %d" % len(paths))
             return False
 
