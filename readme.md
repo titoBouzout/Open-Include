@@ -76,6 +76,7 @@ Download or clone the contents of this repository to a folder named exactly as t
 -   [Starli0n][]
 -   [jbrooksuk][]
 -   [xHN35RQ][]
+-   [i8degrees][]
 
   [titoBouzout]: https://github.com/titoBouzout
   [vip32]: https://github.com/vip32
@@ -89,3 +90,4 @@ Download or clone the contents of this repository to a folder named exactly as t
   [Starli0n]: https://github.com/Starli0n
   [jbrooksuk]: https://github.com/jbrooksuk
   [xHN35RQ]: https://github.com/xHN35RQ
+  [i8degrees]: https://github.com/i8degrees
