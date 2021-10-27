@@ -426,7 +426,7 @@ class OpenIncludeThread(threading.Thread):
 
         if maybe_path.startswith('http'):
             # HTTP URL
-            if BINARY.search(maybe_path) or s.get("open_http_in_browser", False):
+            if BINARY.search(maybe_path) or get_setting("open_http_in_browser", False):
                 sublime.status_message("Opening in Browser " + maybe_path)
 
                 import webbrowser
