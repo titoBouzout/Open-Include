@@ -419,6 +419,16 @@ class OpenIncludeThread(threading.Thread):
 
         debug_info('Trying to open: ' + maybe_path)
 
+        row_regex = re.compile(r':(\d+)(?:-(\d+))?$')
+        row_search_result = row_regex.search(maybe_path)
+        rows = None
+        if row_search_result is not None:
+            maybe_path = row_regex.sub('', maybe_path)
+            row_start = row_end = int(row_search_result.group(1))
+            if row_search_result.group(2) is not None:
+                row_end = int(row_search_result.group(2))
+            rows = [row_start, row_end]
+
         path_normalized = normalize(maybe_path)
         if path_normalized in cache['checked']:
             return False
@@ -448,7 +458,7 @@ class OpenIncludeThread(threading.Thread):
                 desktop.open(maybe_path)
             else:
                 # Open within ST
-                self.open(window, maybe_path)
+                self.open(window, maybe_path, rows = rows)
 
         elif maybe_path and ( os_is_dir(maybe_path) or os_is_dir('\\' + maybe_path) ) and not cache['folder'] and cache['folder_save']:
             # Walkaround for UNC path
@@ -521,11 +531,23 @@ class OpenIncludeThread(threading.Thread):
             elif content_type == 'text/xml' or content_type == 'application/xml':
                 view.settings().set('syntax', 'Packages/XML/XML.tmLanguage')
 
-    def open(self, window, path):
+    def open(self, window, path, rows = None):
         if get_setting('in_secondary_colum', False):
             window.run_command('set_layout', {"cols": [0.0, 0.5, 1.0], "rows": [0.0, 1.0], "cells": [[0, 0, 1, 1], [1, 0, 2, 1]]})
             window.focus_group(1)
         window.open_file(path)
+
+        if rows is not None:
+            start_row, end_row = min(rows), max(rows)
+
+            view = window.active_view()
+            start_point = view.text_point(start_row - 1, 0)
+            end_point = view.text_point(end_row, 0) - 1
+
+            selection = view.sel()
+            selection.clear()
+            selection.add(sublime.Region(start_point, end_point))
+            view.show(view.text_point(start_row - 1, 0))
 
 class OpenIncludeFindInFileGoto():
     def run(self, view):
