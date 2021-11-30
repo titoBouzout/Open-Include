@@ -1,7 +1,7 @@
 # Description
 
 This plugin will try to open Sublime Text file paths found on caret positions or partial selections when pressing <kbd>ALT+D</kbd>.
-It has support for custom prefixes and subfixes. Usefull when doing require style JavaScript modules when no extension specified.
+It has support for custom prefixes and subfixes. Useful when doing require style JavaScript modules when no extension specified.
 
 Strings starting with HTTP will open with default browser (if binary, ie ends with png), if not, we will read the file with urllib and open the result in a new view/tab. By setting the `"open_http_in_browser"` setting in your user preferences to `true`, we will always open the default browser.
 
